@@ -6,7 +6,9 @@ note
 
 class
 	GROUND_MODEL
-create run
+
+create
+	run
 
 feature
 
@@ -22,60 +24,31 @@ feature
 
 	is_door_closing: INTEGER = 3
 
-	is_gear_retracted: INTEGER = 0
+	is_gear_retracting: INTEGER = 3
+
+	is_gear_retracted: INTEGER = 2
 
 	is_gear_extending: INTEGER = 1
 
-	is_gear_extended: INTEGER = 2
-
-	is_gear_retracting: INTEGER = 3
+	is_gear_extended: INTEGER = 0
 
 feature
 
 	handle_status: INTEGER
-		do
-			from
-				Result := -1
-			until
-				Result = is_handle_up or Result = is_handle_down
-			loop
-				print ("handle status: ")
-				io.read_integer
-				io.new_line
-				Result := io.last_integer
-			end
-		end
 
-	door_status: INTEGER assign set_door_status
+	door_status: INTEGER
 
-	set_door_status (new_door_status: INTEGER)
-		do
-			door_status := new_door_status
-			print ("door status: " + new_door_status.out)
-			io.new_line
-		end
-
-	gear_status: INTEGER assign set_gear_status
-
-	set_gear_status (new_gear_status: INTEGER)
-		do
-			gear_status := new_gear_status
-			print ("gear status: " + new_gear_status.out)
-			io.new_line
-		end
-
-
-
+	gear_status: INTEGER
 
 	close_door
 		do
 			inspect door_status
 			when is_door_open then
-				Current.door_status := is_door_closing
+				door_status := is_door_closing
 			when is_door_closing then
-				Current.door_status := is_door_closed
+				door_status := is_door_closed
 			when is_door_opening then
-				Current.door_status := is_door_closing
+				door_status := is_door_closing
 			else
 			end
 		end
@@ -84,15 +57,14 @@ feature
 		do
 			inspect door_status
 			when is_door_closed then
-				Current.door_status := is_door_opening
+				door_status := is_door_opening
 			when is_door_closing then
-				Current.door_status := is_door_opening
+				door_status := is_door_opening
 			when is_door_opening then
-				Current.door_status := is_door_open
+				door_status := is_door_open
 			else
 			end
 		end
-
 
 	retract
 		do
@@ -101,11 +73,11 @@ feature
 				if door_status = is_door_open then
 					inspect gear_status
 					when is_gear_extended then
-						Current.gear_status := is_gear_retracting
+						gear_status := is_gear_retracting
 					when is_gear_retracting then
-						Current.gear_status := is_gear_retracted
+						gear_status := is_gear_retracted
 					when is_gear_extending then
-						Current.gear_status := is_gear_retracting
+						gear_status := is_gear_retracting
 					else
 					end
 				end
@@ -113,7 +85,6 @@ feature
 				close_door
 			end
 		end
-
 
 	extend
 		do
@@ -122,11 +93,11 @@ feature
 				if door_status = is_door_open then
 					inspect gear_status
 					when is_gear_retracted then
-						Current.gear_status := is_gear_extending
+						gear_status := is_gear_extending
 					when is_gear_extending then
-						Current.gear_status := is_gear_extended
+						gear_status := is_gear_extended
 					when is_gear_retracting then
-						Current.gear_status := is_gear_extending
+						gear_status := is_gear_extending
 					else
 					end
 				end
@@ -135,24 +106,44 @@ feature
 			end
 		end
 
+	main
+		do
+			if handle_status = is_handle_up then
+				retract
+			elseif handle_status = is_handle_down then
+				extend
+			end
+		end
+
 	run
 		do
-			Current.door_status := is_door_closed
-			Current.gear_status := is_gear_extended
-
 			from
 			until
 				False
 			loop
-				if handle_status = is_handle_up then
-					retract
-				elseif handle_status = is_handle_down then
-					extend
-				end
+				main
 			end
 		end
 
-invariant
-	(gear_status = is_gear_extending or gear_status = is_gear_retracting) implies door_status = is_door_open
-	door_status = is_door_closed implies (gear_status = is_gear_extended or gear_status = is_gear_retracted)
+	r11_bis (steps: INTEGER)
+		require
+			steps > 40
+		local
+			i: INTEGER
+		do
+			from
+				i := 0
+			until
+				steps = i
+			loop
+				handle_status := is_handle_down
+				main
+				i := i + 1
+			variant
+				steps - i
+			end
+		ensure
+			gear_status = is_gear_extended and door_status = is_door_closed
+		end
+
 end
