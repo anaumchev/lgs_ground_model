@@ -6,19 +6,71 @@ note
   explicit: contracts
 class
 	GROUND_MODEL
+feature -- Constants
+
+  -- Handle constants
+
+	is_handle_up: INTEGER = 0
+
+	is_handle_down: INTEGER = 1
+
+  --Door constants
+
+	is_door_closed: INTEGER = 0
+
+	is_door_opening: INTEGER = 1
+
+	is_door_open: INTEGER = 2
+
+	is_door_closing: INTEGER = 3
+
+  -- Gear constants
+
+	is_gear_retracting: INTEGER = 3
+
+	is_gear_retracted: INTEGER = 2
+
+	is_gear_extending: INTEGER = 1
+
+	is_gear_extended: INTEGER = 0
+
+feature
+
+	handle_status: INTEGER
+
+	door_status: INTEGER
+
+	gear_status: INTEGER
+
+  values_are_in_ranges: BOOLEAN
+    note status: functional
+    do
+      Result :=
+        (handle_status = is_handle_up or handle_status = is_handle_down) and
+        (door_status = is_door_closed or door_status = is_door_opening or door_status = is_door_open or door_status = is_door_closing) and
+        (gear_status = is_gear_extended or gear_status = is_gear_extending or gear_status = is_gear_retracted or gear_status = is_gear_retracting)
+    end
+
+  set_door_status (new_door_status: INTEGER)
+      -- We do not know yet how this happens, but we know the effects
+    note status: skip
+    require modify_field ("door_status", Current)
+    do
+    ensure door_status = new_door_status
+    end
+
+  set_gear_status (new_gear_status: INTEGER)
+      -- We do not know how this happens, but we know the effects
+    note status: skip
+    require modify_field ("gear_status", Current)
+    do
+    ensure gear_status = new_gear_status
+    end
 
 feature {NONE}
 
-	main
-		do
-			if handle_status = is_handle_up then
-				retract
-			elseif handle_status = is_handle_down then
-				extend
-			end
-		end
-
 	close_door
+      -- Implementation of the r_closeDoor sequence
 		do
 			inspect door_status
 			when is_door_open then
@@ -32,6 +84,7 @@ feature {NONE}
 		end
 
 	open_door
+      -- Added the lacking procedure for opening the doors
 		do
 			inspect door_status
 			when is_door_closed then
@@ -45,6 +98,7 @@ feature {NONE}
 		end
 
 	retract
+      -- Implementation of r_retractionSequence
 		do
 			if gear_status /= is_gear_retracted then
 				open_door
@@ -65,6 +119,7 @@ feature {NONE}
 		end
 
 	extend
+      -- Implementation of r_outgoingSequence
 		do
 			if gear_status /= is_gear_extended then
 				open_door
@@ -84,73 +139,25 @@ feature {NONE}
 			end
 		end
 
+feature
 
-	is_handle_up: INTEGER = 0
+	main
+    note explicit: wrapping
+		do
+			if handle_status = is_handle_up then
+				retract
+			elseif handle_status = is_handle_down then
+				extend
+			end
+		end
 
-	is_handle_down: INTEGER = 1
-
-	is_door_closed: INTEGER = 0
-
-	is_door_opening: INTEGER = 1
-
-	is_door_open: INTEGER = 2
-
-	is_door_closing: INTEGER = 3
-
-	is_gear_retracting: INTEGER = 3
-
-	is_gear_retracted: INTEGER = 2
-
-	is_gear_extending: INTEGER = 1
-
-	is_gear_extended: INTEGER = 0
-
-
-	handle_status: INTEGER
-
-  set_handle_status (new_handle_status: INTEGER)
-    note
-      status: skip
-    require
-      modify_field ("handle_status", Current)
-    do
-      handle_status := new_handle_status
-    ensure
-      handle_status = new_handle_status
-    end
-
-	door_status: INTEGER
-
-  set_door_status (new_door_status: INTEGER)
-    note
-      status: skip
-    require
-      modify_field ("door_status", Current)
-    do
-      door_status := new_door_status
-    ensure
-      door_status = new_door_status
-    end
-
-	gear_status: INTEGER
-
-  set_gear_status (new_gear_status: INTEGER)
-    note
-      status: skip
-    require
-      modify_field ("gear_status", Current)
-    do
-      gear_status := new_gear_status
-    ensure
-      gear_status = new_gear_status
-    end
 
 	r11_bis (steps: INTEGER)
+    note explicit: wrapping
     require
+      handle_status = is_handle_down
       steps = 5
-      handle_status = is_handle_down;
-      door_status = is_door_closed or door_status = is_door_closing or door_status = is_door_open or door_status = is_door_opening
-      gear_status = is_gear_retracted or gear_status = is_gear_retracting or gear_status = is_gear_extended or gear_status = is_gear_extending
+      values_are_in_ranges
     local
       i: INTEGER
 		do
@@ -167,8 +174,8 @@ feature {NONE}
       door_status = is_door_closed
 		end
 
-
 	r11_bis_inductive_step
+    note explicit: wrapping
     require
       handle_status = is_handle_down
       door_status = is_door_closed
@@ -179,4 +186,6 @@ feature {NONE}
       door_status = is_door_closed
     	gear_status = is_gear_extended
 		end
+  
+
 end
