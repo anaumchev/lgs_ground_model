@@ -48,26 +48,47 @@ feature -- The top-level logic
       -- Implementation of r_Main
     do
     ensure
-      handle_up_door_closed_gear_retracted: (old handle_status = is_handle_up and old door_status = is_door_closed and old gear_status = is_gear_retracted) implies (handle_status = is_handle_up and door_status = is_door_closed and gear_status = is_gear_retracted)
-      handle_up_door_closed_gear_extended: (old handle_status = is_handle_up and old door_status = is_door_closed and old gear_status = is_gear_extended) implies (handle_status = is_handle_up and door_status = is_door_opening and gear_status = is_gear_extended)
-      handle_up_door_opening_gear_retracted: (old handle_status = is_handle_up and old door_status = is_door_opening and old gear_status = is_gear_retracted) implies (handle_status = is_handle_up and door_status = is_door_closing and gear_status = is_gear_retracted)
-      handle_up_door_opening_gear_extended: (old handle_status = is_handle_up and old door_status = is_door_opening and old gear_status = is_gear_extended) implies (handle_status = is_handle_up and door_status = is_door_open and gear_status = is_gear_extended)
-      handle_up_door_open_gear_retracted: (old handle_status = is_handle_up and old door_status = is_door_open and old gear_status = is_gear_retracted) implies (handle_status = is_handle_up and door_status = is_door_closing and gear_status = is_gear_retracted)
-      handle_up_door_open_gear_extending: (old handle_status = is_handle_up and old door_status = is_door_open and old gear_status = is_gear_extending) implies (handle_status = is_handle_up and door_status = is_door_open and gear_status = is_gear_retracting)
-      handle_up_door_open_gear_extended: (old handle_status = is_handle_up and old door_status = is_door_open and old gear_status = is_gear_extended) implies (handle_status = is_handle_up and door_status = is_door_open and gear_status = is_gear_retracting)
-      handle_up_door_open_gear_retracting: (old handle_status = is_handle_up and old door_status = is_door_open and old gear_status = is_gear_retracting) implies (handle_status = is_handle_up and door_status = is_door_open and gear_status = is_gear_retracted)
-      handle_up_door_closing_gear_retracted: (old handle_status = is_handle_up and old door_status = is_door_closing and old gear_status = is_gear_retracted) implies (handle_status = is_handle_up and door_status = is_door_closed and gear_status = is_gear_retracted)
-      handle_up_door_closing_gear_extended: (old handle_status = is_handle_up and old door_status = is_door_closing and old gear_status = is_gear_extended) implies (handle_status = is_handle_up and door_status = is_door_opening and gear_status = is_gear_extended)
-      handle_down_door_closed_gear_retracted: (old handle_status = is_handle_down and old door_status = is_door_closed and old gear_status = is_gear_retracted) implies (handle_status = is_handle_down and door_status = is_door_opening and gear_status = is_gear_retracted)
-      handle_down_door_closed_gear_extended: (old handle_status = is_handle_down and old door_status = is_door_closed and old gear_status = is_gear_extended) implies (handle_status = is_handle_down and door_status = is_door_closed and gear_status = is_gear_extended)
-      handle_down_door_opening_gear_retracted: (old handle_status = is_handle_down and old door_status = is_door_opening and old gear_status = is_gear_retracted) implies (handle_status = is_handle_down and door_status = is_door_open and gear_status = is_gear_retracted)
-      handle_down_door_opening_gear_extended: (old handle_status = is_handle_down and old door_status = is_door_opening and old gear_status = is_gear_extended) implies (handle_status = is_handle_down and door_status = is_door_closing and gear_status = is_gear_extended)
-      handle_down_door_open_gear_retracted: (old handle_status = is_handle_down and old door_status = is_door_open and old gear_status = is_gear_retracted) implies (handle_status = is_handle_down and door_status = is_door_open and gear_status = is_gear_extending)
-      handle_down_door_open_gear_extending: (old handle_status = is_handle_down and old door_status = is_door_open and old gear_status = is_gear_extending) implies (handle_status = is_handle_down and door_status = is_door_open and gear_status = is_gear_extended)
-      handle_down_door_open_gear_extended: (old handle_status = is_handle_down and old door_status = is_door_open and old gear_status = is_gear_extended) implies (handle_status = is_handle_down and door_status = is_door_closing and gear_status = is_gear_extended)
-      handle_down_door_open_gear_retracting: (old handle_status = is_handle_down and old door_status = is_door_open and old gear_status = is_gear_retracting) implies (handle_status = is_handle_down and door_status = is_door_open and gear_status = is_gear_extending)
-      handle_down_door_closing_gear_retracted: (old handle_status = is_handle_down and old door_status = is_door_closing and old gear_status = is_gear_retracted) implies (handle_status = is_handle_down and door_status = is_door_opening and gear_status = is_gear_retracted)
-      handle_down_door_closing_gear_extended: (old handle_status = is_handle_down and old door_status = is_door_closing and old gear_status = is_gear_extended) implies (handle_status = is_handle_down and door_status = is_door_closed and gear_status = is_gear_extended)
+    	handle_status = old handle_status
+
+			handle_status = is_handle_up implies (
+				(old gear_status /= is_gear_retracted implies (
+					(old door_status /= is_door_open implies gear_status = old gear_status) and
+					(old door_status = is_door_closed implies door_status = is_door_opening) and
+					(old door_status = is_door_closing implies door_status = is_door_opening) and
+					(old door_status = is_door_opening implies door_status = is_door_open) and
+					(old door_status = is_door_open implies (
+						(old gear_status = is_gear_extended implies gear_status = is_gear_retracting) and
+						(old gear_status = is_gear_retracting implies gear_status = is_gear_retracted) and
+						(old gear_status = is_gear_extending implies gear_status = is_gear_retracting)
+					))
+				)) and
+				(old gear_status = is_gear_retracted implies (
+					(gear_status = old gear_status) and
+					(old door_status = is_door_open implies door_status = is_door_closing) and
+					(old door_status = is_door_closing implies door_status = is_door_closed) and
+					(old door_status = is_door_opening implies door_status = is_door_closing)
+				))
+			)
+
+			handle_status = is_handle_down implies (
+				(old gear_status /= is_gear_extended implies (
+					(old door_status /= is_door_open implies gear_status = old gear_status) and
+					(old door_status = is_door_closed implies door_status = is_door_opening) and
+--					(old door_status = is_door_closing implies door_status = is_door_opening) and
+					(old door_status = is_door_opening implies door_status = is_door_open) and
+					(old door_status = is_door_open implies (
+						(old gear_status = is_gear_retracted implies gear_status = is_gear_extending) and
+						(old gear_status = is_gear_extending implies gear_status = is_gear_extended) and
+						(old gear_status = is_gear_retracting implies gear_status = is_gear_extending)
+					))
+				)) and
+				(old gear_status = is_gear_extended implies (
+					(gear_status = old gear_status) and
+					(old door_status = is_door_open implies door_status = is_door_closing) and
+					(old door_status = is_door_closing implies door_status = is_door_closed) and
+					(old door_status = is_door_opening implies door_status = is_door_closing)
+				))
+			)
     end
 
 
