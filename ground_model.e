@@ -15,25 +15,29 @@ feature {NONE}
 
   -- Door state range
 
-  is_door_closed: INTEGER = 0
+  is_door_closed: INTEGER = 2
 
-  is_door_opening: INTEGER = 1
+  is_door_opening: INTEGER = 3
 
-  is_door_open: INTEGER = 2
+  is_door_open: INTEGER = 4
 
-  is_door_closing: INTEGER = 3
+  is_door_closing: INTEGER = 5
 
   -- Gear state range
 
-  is_gear_retracting: INTEGER = 3
+  is_gear_retracting: INTEGER = 6
 
-  is_gear_retracted: INTEGER = 2
+  is_gear_retracted: INTEGER = 7
 
-  is_gear_extending: INTEGER = 1
+  is_gear_extending: INTEGER = 8
 
-  is_gear_extended: INTEGER = 0
+  is_gear_extended: INTEGER = 9
 
-feature {NONE}
+feature {NONE} -- Virtual time
+
+  time: NATURAL
+
+feature {NONE} -- State space
 
   handle_status: INTEGER
 
@@ -41,14 +45,17 @@ feature {NONE}
 
   gear_status: INTEGER
 
-  values_are_in_ranges: BOOLEAN
+feature {NONE} -- Consistency criteria
+
+  is_consistent: BOOLEAN
       -- There is no "|" notation in Eiffel, thus have to check the ranges explicitly
     note status: functional
     do
-      Result :=
-        (handle_status = is_handle_up or handle_status = is_handle_down) and
-        (door_status = is_door_closed or door_status = is_door_opening or door_status = is_door_open or door_status = is_door_closing) and
-        (gear_status = is_gear_extended or gear_status = is_gear_extending or gear_status = is_gear_retracted or gear_status = is_gear_retracting)
+      Result := ((handle_status = is_handle_up or handle_status = is_handle_down) and
+                (door_status = is_door_closed or door_status = is_door_opening or door_status = is_door_open or door_status = is_door_closing) and
+                (gear_status = is_gear_extended or gear_status = is_gear_extending or gear_status = is_gear_retracted or gear_status = is_gear_retracting) and
+                ((gear_status = is_gear_extending or gear_status = is_gear_retracting) implies door_status = is_door_open) and
+                (door_status = is_door_closed implies (gear_status = is_gear_extended or gear_status = is_gear_retracted)))
     end
 
 feature {NONE} -- Operations on doors
@@ -141,11 +148,28 @@ feature {NONE} -- Operations on gears
       end
     end
 
-feature {NONE} -- The top-level logic 
+feature -- The top-level logic 
+
+  init
+      -- Initialization of the system
+    do
+      -- Ignore (verification-related annotations)
+      check assume:observers.is_empty end
+      check assume:is_open end
+      -- Meaningful instructions
+      handle_status := is_handle_down
+      door_status := is_door_closed
+      gear_status := is_gear_extended
+    end
 
   main
-      -- Implementation of r_Main
+      -- The main routine that runs in an infinite loop
     do
+      -- Ignore (verification-related annotations)
+      check assume:observers.is_empty end
+      check assume:is_open end
+      -- Meaningful instructions
+      time := time + 1
       if handle_status = is_handle_up then
         retract
       elseif handle_status = is_handle_down then
@@ -153,42 +177,40 @@ feature {NONE} -- The top-level logic
       end
     end
 
-feature -- The entry point to the system
-  
-  working_loop
-      -- This routine continuously polls the system's state and reacts to any changes
-    do
-      from
-      until
-        False
-      loop
-        main
-      end
-    end
-
 feature {NONE}
 
-  r11_bis (steps: INTEGER)
+  init_ensures_consistency
+    do
+      init
+    ensure
+      is_consistent
+    end
+
+  main_preserves_consistency
+    require
+      is_consistent
+    do
+      main
+    ensure
+      is_consistent
+    end
+
+  r11_bis
       -- Representation of the r11_bis requirement; we find a number of steps after which the desirable state is achieved.
       -- In this particular example, the state is achieved after 5 iterations at most.
     require
+      time = 0
       handle_status = is_handle_down
-      steps = 5
-      values_are_in_ranges
-    local
-      i: INTEGER
+      is_consistent
     do
       from
-        i := 0
       until
-        i = steps
+        (door_status = is_door_closed and gear_status = is_gear_extended) or (handle_status /= is_handle_down)
       loop
         main
-        i := i + 1
       end
     ensure
-      door_status = is_door_closed
-      gear_status = is_gear_extended
+      (handle_status = is_handle_down) implies (time < time.max_value)
     end
 
   r11_bis_stability
@@ -204,28 +226,22 @@ feature {NONE}
       gear_status = is_gear_extended
     end
 
-
-  r12_bis (steps: INTEGER)
+  r12_bis
       -- Representation of the r12_bis requirement; we find a number of steps after which the desirable state is achieved.
       -- In this particular example, the state is achieved after 5 iterations at most.
     require
+      time = 0
       handle_status = is_handle_up
-      steps = 5
-      values_are_in_ranges
-    local
-      i: INTEGER
+      is_consistent
     do
       from
-        i := 0
       until
-        i = steps
+        (door_status = is_door_closed and gear_status = is_gear_retracted) or (handle_status /= is_handle_up)
       loop
         main
-        i := i + 1
       end
     ensure
-      door_status = is_door_closed
-      gear_status = is_gear_retracted
+      (handle_status = is_handle_up) implies (time < time.max_value)
     end
 
   r12_bis_stability
@@ -246,10 +262,9 @@ feature {NONE}
       -- If you uncomment the second 'main' call, it will pass verification.
     require
       handle_status = is_handle_down
-      values_are_in_ranges
+      is_consistent
     do
       main
---      main
     ensure
       gear_status /= is_gear_retracting
     end
@@ -259,9 +274,8 @@ feature {NONE}
       -- If you uncomment the second 'main' call, it will pass verification.
     require
       handle_status = is_handle_up
-      values_are_in_ranges
+      is_consistent
     do
-      main
       main
     ensure
       gear_status /= is_gear_extending
