@@ -3,8 +3,7 @@ note
 	author: ""
 	date: "$Date$"
 	revision: "$Revision$"
-	explicit: wrapping
-
+  explicit: wrapping
 deferred class
 	AXIOMS
 feature
@@ -40,34 +39,10 @@ feature
 			False
 		end
 
-	gears_extend_only_with_door_open (gm: GROUND_MODEL)
-		require
-			gm.gear_status = gm.is_gear_extending
-		do
-		ensure
-			gm.door_status = gm.is_door_open
-		end
-
-	gears_retract_only_with_door_open (gm: GROUND_MODEL)
-		require
-			gm.gear_status = gm.is_gear_retracting
-		do
-		ensure
-			gm.door_status = gm.is_door_open
-		end
-
-	door_is_closed_only_with_gears_extended_or_retracted (gm: GROUND_MODEL)
-		require
-			gm.gear_status /= gm.is_gear_extended
-			gm.gear_status /= gm.is_gear_retracted
-		do
-		ensure
-			gm.door_status /= gm.is_door_closed
-		end
-
 
 	handle_up_door_closed_gear_retracted (gm: GROUND_MODEL)
 		require
+      modify (gm)
 			gm.handle_status = gm.is_handle_up
 			gm.door_status = gm.is_door_closed
 			gm.gear_status = gm.is_gear_retracted
@@ -79,8 +54,10 @@ feature
 			gm.gear_status = gm.is_gear_retracted
 		end
 
+
 	handle_up_door_closed_gear_extended (gm: GROUND_MODEL)
 		require
+      modify (gm)
 			gm.handle_status = gm.is_handle_up
 			gm.door_status = gm.is_door_closed
 			gm.gear_status = gm.is_gear_extended
@@ -96,6 +73,7 @@ feature
 
 	handle_up_door_opening_gear_retracted (gm: GROUND_MODEL)
 		require
+      modify (gm)
 			gm.handle_status = gm.is_handle_up
 			gm.door_status = gm.is_door_opening
 			gm.gear_status = gm.is_gear_retracted
@@ -109,6 +87,7 @@ feature
 
 	handle_up_door_opening_gear_extended (gm: GROUND_MODEL)
 		require
+      modify (gm)
 			gm.handle_status = gm.is_handle_up
 			gm.door_status = gm.is_door_opening
 			gm.gear_status = gm.is_gear_extended
@@ -122,6 +101,7 @@ feature
 
 	handle_up_door_open_gear_retracted (gm: GROUND_MODEL)
 		require
+      modify (gm)
 			gm.handle_status = gm.is_handle_up
 			gm.door_status = gm.is_door_open
 			gm.gear_status = gm.is_gear_retracted
@@ -136,6 +116,7 @@ feature
 
 	handle_up_door_open_gear_extending (gm: GROUND_MODEL)
 		require
+      modify (gm)
 			gm.handle_status = gm.is_handle_up
 			gm.door_status = gm.is_door_open
 			gm.gear_status = gm.is_gear_extending
@@ -149,6 +130,7 @@ feature
 
 	handle_up_door_open_gear_extended (gm: GROUND_MODEL)
 		require
+      modify (gm)
 			gm.handle_status = gm.is_handle_up
 			gm.door_status = gm.is_door_open
 			gm.gear_status = gm.is_gear_extended
@@ -162,6 +144,7 @@ feature
 
 	handle_up_door_open_gear_retracting (gm: GROUND_MODEL)
 		require
+      modify (gm)
 			gm.handle_status = gm.is_handle_up
 			gm.door_status = gm.is_door_open
 			gm.gear_status = gm.is_gear_retracting
@@ -175,6 +158,7 @@ feature
 
 	handle_up_door_closing_gear_retracted (gm: GROUND_MODEL)
 		require
+      modify (gm)
 			gm.handle_status = gm.is_handle_up
 			gm.door_status = gm.is_door_closing
 			gm.gear_status = gm.is_gear_retracted
@@ -188,6 +172,7 @@ feature
 
 	handle_up_door_closing_gear_extended (gm: GROUND_MODEL)
 		require
+      modify (gm)
 			gm.handle_status = gm.is_handle_up
 			gm.door_status = gm.is_door_closing
 			gm.gear_status = gm.is_gear_extended
@@ -202,6 +187,7 @@ feature
 
 	handle_down_door_closed_gear_retracted (gm: GROUND_MODEL)
 		require
+      modify (gm)
 			gm.handle_status = gm.is_handle_down
 			gm.door_status = gm.is_door_closed
 			gm.gear_status = gm.is_gear_retracted
@@ -215,6 +201,7 @@ feature
 
 	handle_down_door_closed_gear_extended (gm: GROUND_MODEL)
 		require
+      modify (gm)
 			gm.handle_status = gm.is_handle_down
 			gm.door_status = gm.is_door_closed
 			gm.gear_status = gm.is_gear_extended
@@ -229,6 +216,7 @@ feature
 
 	handle_down_door_opening_gear_retracted (gm: GROUND_MODEL)
 		require
+      modify (gm)
 			gm.handle_status = gm.is_handle_down
 			gm.door_status = gm.is_door_opening
 			gm.gear_status = gm.is_gear_retracted
@@ -242,6 +230,7 @@ feature
 
 	handle_down_door_opening_gear_extended (gm: GROUND_MODEL)
 		require
+      modify (gm)
 			gm.handle_status = gm.is_handle_down
 			gm.door_status = gm.is_door_opening
 			gm.gear_status = gm.is_gear_extended
@@ -255,6 +244,7 @@ feature
 
 	handle_down_door_open_gear_retracted (gm: GROUND_MODEL)
 		require
+      modify (gm)
 			gm.handle_status = gm.is_handle_down
 			gm.door_status = gm.is_door_open
 			gm.gear_status = gm.is_gear_retracted
@@ -268,6 +258,7 @@ feature
 
 	handle_down_door_open_gear_extending (gm: GROUND_MODEL)
 		require
+      modify (gm)
 			gm.handle_status = gm.is_handle_down
 			gm.door_status = gm.is_door_open
 			gm.gear_status = gm.is_gear_extending
@@ -281,6 +272,7 @@ feature
 
 	handle_down_door_open_gear_extended (gm: GROUND_MODEL)
 		require
+      modify (gm)
 			gm.handle_status = gm.is_handle_down
 			gm.door_status = gm.is_door_open
 			gm.gear_status = gm.is_gear_extended
@@ -294,6 +286,7 @@ feature
 
 	handle_down_door_open_gear_retracting (gm: GROUND_MODEL)
 		require
+      modify (gm)
 			gm.handle_status = gm.is_handle_down
 			gm.door_status = gm.is_door_open
 			gm.gear_status = gm.is_gear_retracting
@@ -307,6 +300,7 @@ feature
 
 	handle_down_door_closing_gear_retracted (gm: GROUND_MODEL)
 		require
+      modify (gm)
 			gm.handle_status = gm.is_handle_down
 			gm.door_status = gm.is_door_closing
 			gm.gear_status = gm.is_gear_retracted
@@ -320,6 +314,7 @@ feature
 
 	handle_down_door_closing_gear_extended (gm: GROUND_MODEL)
 		require
+      modify (gm)
 			gm.handle_status = gm.is_handle_down
 			gm.door_status = gm.is_door_closing
 			gm.gear_status = gm.is_gear_extended
@@ -333,6 +328,7 @@ feature
 
 	well_definedness (gm_1, gm_2: GROUND_MODEL)
 		require
+      modify ([gm_1, gm_2])
 			gm_1.handle_status = gm_2.handle_status
 			gm_1.door_status = gm_2.door_status
 			gm_1.gear_status = gm_2.gear_status
