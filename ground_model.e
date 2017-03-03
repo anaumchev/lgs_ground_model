@@ -1,48 +1,28 @@
-note
-  description: "Verified implementation of the Landing Gear System ASM"
-  author: "Alexandr Naumchev a.naumchev at innopolis.ru"
-  date: "2/2/2017"
-  revision: "$1$"
-  explicit: "all"
-class
-  GROUND_MODEL
-feature {NONE}
+note explicit: "all" -- Ignore (verification-related annotations)
+
+class GROUND_MODEL
+feature {NONE} -- State ranges
 
   -- Handle state range
   is_handle_up: INTEGER = 0
-
   is_handle_down: INTEGER = 1
 
   -- Door state range
-
   is_door_closed: INTEGER = 2
-
   is_door_opening: INTEGER = 3
-
   is_door_open: INTEGER = 4
-
   is_door_closing: INTEGER = 5
 
   -- Gear state range
-
   is_gear_retracting: INTEGER = 6
-
   is_gear_retracted: INTEGER = 7
-
   is_gear_extending: INTEGER = 8
-
   is_gear_extended: INTEGER = 9
-
-feature {NONE} -- Virtual time
-
-  time: NATURAL
 
 feature {NONE} -- State space
 
   handle_status: INTEGER
-
   door_status: INTEGER
-
   gear_status: INTEGER
 
 feature {NONE} -- Consistency criteria
@@ -61,7 +41,7 @@ feature {NONE} -- Consistency criteria
 feature {NONE} -- Operations on doors
 
   close_door
-      -- Implementation of the r_closeDoor sequence
+      -- Closing the doors.
     do
       -- Ignore (verification-related annotations)
       check assume:observers.is_empty end
@@ -79,11 +59,12 @@ feature {NONE} -- Operations on doors
     end
 
   open_door
-      -- Added the lacking procedure for opening the doors
+      -- Opening the doors.
     do
       -- Ignore (verification-related annotations)
       check assume:observers.is_empty end
       check assume:is_open end
+
       -- Meaningful instructions
       inspect door_status
       when is_door_closed then
@@ -99,11 +80,12 @@ feature {NONE} -- Operations on doors
 feature {NONE} -- Operations on gears
 
   retract
-      -- Implementation of r_retractionSequence
+      -- Gears retraction.
     do
       -- Ignore (verification-related annotations)
       check assume:observers.is_empty end
       check assume:is_open end
+
       -- Meaningful instructions
       if gear_status /= is_gear_retracted then
         open_door
@@ -124,11 +106,12 @@ feature {NONE} -- Operations on gears
     end
 
   extend
-      -- Implementation of r_outgoingSequence
+      -- Gears extension.
     do
       -- Ignore (verification-related annotations)
       check assume:observers.is_empty end
       check assume:is_open end
+
       -- Meaningful instructions
       if gear_status /= is_gear_extended then
         open_door
@@ -151,11 +134,12 @@ feature {NONE} -- Operations on gears
 feature -- The top-level logic 
 
   init
-      -- Initialization of the system
+      -- Initialization of the system.
     do
       -- Ignore (verification-related annotations)
       check assume:observers.is_empty end
       check assume:is_open end
+
       -- Meaningful instructions
       handle_status := is_handle_down
       door_status := is_door_closed
@@ -163,13 +147,13 @@ feature -- The top-level logic
     end
 
   main
-      -- The main routine that runs in an infinite loop
+      -- The main routine that will infinitely react to the handle changes.
     do
       -- Ignore (verification-related annotations)
       check assume:observers.is_empty end
       check assume:is_open end
+
       -- Meaningful instructions
-      time := time + 1
       if handle_status = is_handle_up then
         retract
       elseif handle_status = is_handle_down then
@@ -177,9 +161,10 @@ feature -- The top-level logic
       end
     end
 
-feature {NONE}
+feature {NONE} -- Representations of the requirements
 
   init_ensures_consistency
+      -- Initialization of the system has to guarantee its consistency.
     do
       init
     ensure
@@ -187,6 +172,7 @@ feature {NONE}
     end
 
   main_preserves_consistency
+      -- The main routine has to preserve consistency.
     require
       is_consistent
     do
@@ -195,26 +181,43 @@ feature {NONE}
       is_consistent
     end
 
-  r11_bis
-      -- Representation of the r11_bis requirement; we find a number of steps after which the desirable state is achieved.
-      -- In this particular example, the state is achieved after 5 iterations at most.
+  main_cannot_control_the_handle (current_handle_status: INTEGER)
+      -- The handle is only observable, not controlled.
+      -- The main routine cannot change the handle status.
     require
-      time = 0
-      handle_status = is_handle_down
+      handle_status = current_handle_status
+    do
+      main
+    ensure
+      handle_status = current_handle_status
+    end
+
+  r11_bis
+      -- If the handle is down and stays down, the doors will close and the gears extend
+      -- in not more than MAX_INT steps:
+      -- ag(ag(handle = DOWN) implies af[MAX_INT](gears = EXTENDED and doors = CLOSED))
+    require
       is_consistent
+    local
+      steps: INTEGER
     do
       from
+        steps := 0
       until
-        (door_status = is_door_closed and gear_status = is_gear_extended) or (handle_status /= is_handle_down)
+        (handle_status /= is_handle_down) or else
+        (door_status = is_door_closed and gear_status = is_gear_extended) or else
+        (steps = steps.max_value)
       loop
         main
+        steps := steps + 1
       end
-    ensure
-      (handle_status = is_handle_down) implies (time < time.max_value)
+      check (handle_status = is_handle_down) implies (steps < steps.max_value) end
     end
 
   r11_bis_stability
-      -- We check that, once the desirable state is achieved, additional iterations will not invalidate it.
+      -- If the handle is down, the door is closed and the gear is extended,
+      -- the system will maintain this state:
+      -- ag(ag(handle = DOWN and doors = CLOSED and gears = EXTENDED) implies ax(ag(handle = DOWN and doors = CLOSED and gears = EXTENDED)))
     require
       handle_status = is_handle_down
       door_status = is_door_closed
@@ -222,30 +225,38 @@ feature {NONE}
     do
       main
     ensure
+      handle_status = is_handle_down
       door_status = is_door_closed
       gear_status = is_gear_extended
     end
 
   r12_bis
-      -- Representation of the r12_bis requirement; we find a number of steps after which the desirable state is achieved.
-      -- In this particular example, the state is achieved after 5 iterations at most.
+      -- If the handle is up and stays up, the doors will close and the gears will retract
+      -- in not more than MAX_INT runs of the main routine:
+      -- ag(ag(handle = UP) implies af[MAX_INT](gears = RETRACTED and doors = CLOSED))
     require
-      time = 0
-      handle_status = is_handle_up
       is_consistent
+    local
+      steps: INTEGER
     do
       from
+        steps := 0
       until
-        (door_status = is_door_closed and gear_status = is_gear_retracted) or (handle_status /= is_handle_up)
+        (handle_status /= is_handle_up) or else
+        (door_status = is_door_closed and gear_status = is_gear_retracted) or else
+        (steps = steps.max_value)
       loop
         main
+        steps := steps + 1
       end
-    ensure
-      (handle_status = is_handle_up) implies (time < time.max_value)
+
+      check (handle_status = is_handle_up) implies (steps < steps.max_value) end
     end
 
   r12_bis_stability
-      -- We check that, once the desirable state is achieved, additional iterations will not invalidate it.
+      -- If the handle is up, the doors are closed and the gears are retracted,
+      -- the system will maintain this state:
+      -- ag(ag(handle = UP and doors = CLOSED and gears = RETRACTED) implies ax(ag(handle = UP and doors = CLOSED and gears = RETRACTED)))
     require
       handle_status = is_handle_up
       door_status = is_door_closed
@@ -253,13 +264,15 @@ feature {NONE}
     do
       main
     ensure
+      handle_status = is_handle_up
       door_status = is_door_closed
       gear_status = is_gear_retracted
     end
 
   r21
-      -- Representation of r21; it fails verification: in the next state doors' status is changed first, and only after that - the gears' status.
-      -- If you uncomment the second 'main' call, it will pass verification.
+      -- If the handle is down, then in the next state
+      -- the gears will not be retracting:
+      -- ag(ag(handle = DOWN) implies ax(ag(gears != RETRACTING)))
     require
       handle_status = is_handle_down
       is_consistent
@@ -270,8 +283,9 @@ feature {NONE}
     end
 
   r22
-      -- Representation of r22; it fails verification: in the next state doors' status is changed first, and only after that - the gears' status.
-      -- If you uncomment the second 'main' call, it will pass verification.
+      -- If the handle is up, then in the next state
+      -- the gears will not be extending:
+      -- ag(ag(handle = UP) implies ax(ag(gears != EXTENDING)))
     require
       handle_status = is_handle_up
       is_consistent
