@@ -48,6 +48,32 @@ grestore
 \usepackage{graphicx}
 \usepackage{color}
 
+\usepackage{hyperref}
+% Configuring autoref, included by hyperref
+\def\sectionautorefname{Section}
+\def\subsectionautorefname{Section}
+\def\subsubsectionautorefname{Section}
+\def\figureautorefname{Figure}
+\def\tableautorefname{Table}
+\def\equationautorefname{Equation}
+
+\newcommand{\e}[1]{\mbox{\lstinline[basicstyle=\normalsize]|#1|}}
+\newcommand{\es}[1]{\mbox{\lstinline[basicstyle=\scriptsize]|#1|}}
+\newcommand{\et}[1]{\mbox{\lstinline[basicstyle=\tiny]|#1|}}
+\newcommand{\etd}[1]{\mbox{\lstinline[basicstyle=\tiny]|#1|}}
+
+\usepackage{listings}
+\usepackage{eiffel}
+\usepackage{boogie}
+
+\lstset{
+	language=OOSC2Eiffel,
+	basicstyle=\footnotesize,
+    float=*
+}
+
+\usepackage{amsmath,amssymb}
+\usepackage{wasysym}
 %
 % \usepackage{mathptmx}      % use Times fonts if available on your TeX system
 %
@@ -79,8 +105,6 @@ grestore
 
 \institute{F. Author \at
               first address \\
-              Tel.: +123-45-678910\\
-              Fax: +123-45-678910\\
               \email{fauthor@example.com}           %  \\
 %             \emph{Present address:} of F. Author  %  if needed
            \and
@@ -95,13 +119,13 @@ grestore
 \maketitle
 
 \begin{abstract}
-The verification of many practical systems -- in particular, embedded systems -- involves processes executing over time, for which it is common to use models based on temporal logic, in either its linear (LTL) or branching (CTL). Some of today’s most advanced automatic program verifiers, however, rely on non-temporal theories, particularly Hoare-style logic. Can we still take advantage of this sophisticated verification technology for more challenging systems? 
-
-As a step towards a positive answer, we have defined a translation scheme from CTL specifications to contract-equipped object-oriented programs, expressed in Eiffel and hence open for processing by the AutoProof program prover. We have applied this scheme to a published CTL model of a widely used realistic example, the “landing gear” system which has been the subject of numerous competing specifications. An attempt to verify the result in AutoProof failed to prove two CTL properties, which on further inspection seemed to be wrong in the original published model, even though the published work claimed to have verified an Abstract State Machine implementation of that model.
-
-Correcting the CTL specification to reflect the apparent informal attempt, re-translating again to contracted Eiffel and re-running the verification leads to success.
-
-The CTL-to-contracted-Eiffel process is still ad hoc, and tailored to generate the kind of scheme that the target verification tool (AutoProof) can handle best, rather than the simplest or most elegant scheme. Even with this limitation, the results highlight the need for rigor in the verification process, and (on the positive side) demonstrate that the highly advanced mechanized proof technology developed over several decades for the verification of traditional programs also has the potential of handling the demanding needs of embedded systems and other demanding contemporary developments.
+The verification of many practical systems -- in particular, embedded systems -- involves processes executing over time, for which it is common to use models based on temporal logic, in either its linear (LTL) or branching (CTL). Some of today’s most advanced automatic program verifiers, however, rely on non-temporal theories, particularly Hoare-style logic. Can we still take advantage of this sophisticated verification technology for more challenging systems? \\
+...
+%As a step towards a positive answer, we have defined a translation scheme from CTL specifications to contract-equipped object-oriented programs, expressed in Eiffel and hence open for processing by the AutoProof program prover. We have applied this scheme to a published CTL model of a widely used realistic example, the “landing gear” system which has been the subject of numerous competing specifications. An attempt to verify the result in AutoProof failed to prove two CTL properties, which on further inspection seemed to be wrong in the original published model, even though the published work claimed to have verified an Abstract State Machine implementation of that model.
+%
+%Correcting the CTL specification to reflect the apparent informal attempt, re-translating again to contracted Eiffel and re-running the verification leads to success.
+%
+%The CTL-to-contracted-Eiffel process is still ad hoc, and tailored to generate the kind of scheme that the target verification tool (AutoProof) can handle best, rather than the simplest or most elegant scheme. Even with this limitation, the results highlight the need for rigor in the verification process, and (on the positive side) demonstrate that the highly advanced mechanized proof technology developed over several decades for the verification of traditional programs also has the potential of handling the demanding needs of embedded systems and other demanding contemporary developments.
 
 \keywords{First keyword \and Second keyword \and More}
 % \PACS{PACS code1 \and PACS code2 \and more}
@@ -110,7 +134,21 @@ The CTL-to-contracted-Eiffel process is still ad hoc, and tailored to generate t
 
 \section{Overview and main results}
 \label{sec:overview}
-\textcolor{red}{Sasha: If you have a question or a comment, please insert it like this.}
+
+\begin{figure}
+\begin{lstlisting}
+from
+until
+  False
+loop
+  main
+end
+\end{lstlisting}
+\caption{The context: an infinitely running process that frequently polls the environment for changes and reacts appropriately.}
+\label{fig:inifinitely_running_process}
+\end{figure}
+
+\textcolor{red}{Sasha: If you have a question or a comment, please insert it in red.}
 
 \section{CTL specifications and the landing gear example}
 \label{sec:landing_gear_example}
@@ -125,8 +163,135 @@ The CTL-to-contracted-Eiffel process is still ad hoc, and tailored to generate t
 \section{The translation scheme}
 \label{sec:translation_scheme}
 
+
+\begin{figure}
+\begin{tabular}{c c c}
+$\Square f$
+&
+$\Longrightarrow$
+&
+\begin{lstlisting}
+f_holds_globally
+  do    
+  ensure
+    f
+  end
+\end{lstlisting}
+\end{tabular}
+\caption{Translation of the ``globally" operator.}
+\label{fig:ltl_globally_eiffel}
+\end{figure}
+
+
+\begin{figure}
+\begin{tabular}{c c c}
+$\Circle f$ 
+&
+$\Longrightarrow$
+&
+\begin{lstlisting}
+f_holds_next
+  do
+    main
+  ensure
+    f
+  end
+\end{lstlisting}
+\end{tabular}
+\caption{Translation of the ``next" operator.}
+\label{fig:ltl_next_eiffel}
+\end{figure}
+
+
+\begin{figure}
+\begin{tabular}{c c c}
+$\Diamond f$
+&
+$\Longrightarrow$
+&
+\begin{lstlisting}
+f_eventually_holds
+  local
+    steps: INTEGER
+  do
+    from
+      steps := 0
+    until
+      f or else steps = steps.max_value
+    loop
+      main
+      steps := steps + 1
+    end
+  ensure
+    f
+  end
+\end{lstlisting}
+\end{tabular}
+\caption{Translation of the ``finally" operator.}
+\label{fig:ltl_eventually_eiffel}
+\end{figure}
+
+
+\begin{figure}
+\begin{tabular}{c c c}
+$f \mathcal{U} g$
+&
+$\Longrightarrow$
+&
+\begin{lstlisting}
+f_holds_until_g
+  local
+    steps: INTEGER
+  do
+    from
+      steps := 0
+    until
+      not f or else g or else steps = steps.max_value
+    loop
+      main
+      steps := steps + 1
+    end
+  ensure
+    g
+  end
+\end{lstlisting}
+\end{tabular}
+\caption{Translation of the ``until" operator.}
+\label{fig:ltl_until_eiffel}
+\end{figure}
+
+\begin{figure}
+\begin{tabular}{c c c}
+$f \mathcal{R} g$
+&
+$\Longrightarrow$
+&
+\begin{lstlisting}
+f_releases_g
+  local
+    steps: INTEGER
+  do
+    from
+      steps := 0
+    until
+      not g or else f or else steps = steps.max_value
+    loop
+      main
+      steps := steps + 1
+    end
+  ensure
+    f and g
+  end
+\end{lstlisting}
+\end{tabular}
+\caption{Translation of the ``release" operator.}
+\label{fig:ltl_release_eiffel}
+\end{figure}
+
+
 \section{Applying the translation scheme to the landing gear example}
 \label{sec:applying_to_example}
+
 
 \section{Limitations of the translation scheme and AutoProof}
 \label{sec:limitations}
