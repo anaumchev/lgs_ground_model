@@ -222,7 +222,7 @@ feature {NONE} -- Representations of the requirements
   r21
       -- If the handle is down, then in the next state
       -- the gears will not be retracting:
-      -- ag(ag(handle = DOWN) implies ax(ag(gears != RETRACTING)))
+      -- (handle = DOWN) implies O(gears != RETRACTING)
     require
       handle_status = is_handle_down
       is_consistent
@@ -235,7 +235,7 @@ feature {NONE} -- Representations of the requirements
   r22
       -- If the handle is up, then in the next state
       -- the gears will not be extending:
-      -- ag(ag(handle = UP) implies ax(ag(gears != EXTENDING)))
+      -- (handle = UP) implies O(gears != EXTENDING)
     require
       handle_status = is_handle_up
       is_consistent
