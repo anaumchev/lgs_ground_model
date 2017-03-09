@@ -240,6 +240,8 @@ $\Longrightarrow$
 &
 \begin{lstlisting}
 f_holds_until_g
+  require
+    f
   local
     steps: INTEGER
   do
@@ -268,6 +270,8 @@ $\Longrightarrow$
 &
 \begin{lstlisting}
 f_releases_g
+  require
+    g
   local
     steps: INTEGER
   do
@@ -360,6 +364,45 @@ r12_bis
 \end{lstlisting}
 \caption{Translation of the ``r12\_bis" requirement.}
 \label{fig:r12_bis_translation}
+\end{figure}
+
+
+\begin{figure}
+\begin{lstlisting}
+r21
+    -- If the handle is down, then in the next state
+    -- the gears will not be retracting:
+    -- handle = DOWN implies O(gears != RETRACTING)
+  require
+    handle_status = is_handle_down
+    is_consistent
+  do
+    main
+  ensure
+    gear_status /= is_gear_retracting
+  end
+\end{lstlisting}
+\caption{Translation of the ``r21" requirement.}
+\label{fig:r21_translation}
+\end{figure}
+
+\begin{figure}
+\begin{lstlisting}
+r22
+    -- If the handle is up, then in the next state
+    -- the gears will not be extending:
+    -- handle = UP implies O(gears != EXTENDING)
+  require
+    handle_status = is_handle_up
+    is_consistent
+  do
+    main
+  ensure
+    gear_status /= is_gear_extending
+  end
+\end{lstlisting}
+\caption{Translation of the ``r21" requirement.}
+\label{fig:r22_translation}
 \end{figure}
 
 
