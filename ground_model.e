@@ -163,47 +163,20 @@ feature -- The top-level logic
 
 feature {NONE} -- Representations of the requirements
 
-  init_ensures_consistency
-      -- Initialization of the system has to guarantee its consistency.
-    do
-      init
-    ensure
-      is_consistent
-    end
-
-  main_preserves_consistency
-      -- The main routine has to preserve consistency.
-    require
-      is_consistent
-    do
-      main
-    ensure
-      is_consistent
-    end
-
-  main_cannot_control_the_handle (current_handle_status: INTEGER)
-      -- The handle is only observable, not controlled.
-      -- The main routine cannot change the handle status.
-    require
-      handle_status = current_handle_status
-    do
-      main
-    ensure
-      handle_status = current_handle_status
-    end
-
   r11_bis
       -- If the handle is down and stays down, the doors will close and the gears extend
       -- in not more than MAX_INT steps:
-      -- ag(ag(handle = DOWN) implies af[MAX_INT](gears = EXTENDED and doors = CLOSED))
+      -- (gears = EXTENDED and doors = CLOSED) R[MAX_INT] (handle = DOWN)
     require
       is_consistent
+      handle_status = is_handle_down
     local
       steps: INTEGER
     do
       from
         steps := 0
       until
+        (not is_consistent) or else
         (handle_status /= is_handle_down) or else
         (door_status = is_door_closed and gear_status = is_gear_extended) or else
         (steps = steps.max_value)
@@ -211,37 +184,27 @@ feature {NONE} -- Representations of the requirements
         main
         steps := steps + 1
       end
-      check (handle_status = is_handle_down) implies (steps < steps.max_value) end
-    end
-
-  r11_bis_stability
-      -- If the handle is down, the door is closed and the gear is extended,
-      -- the system will maintain this state:
-      -- ag(ag(handle = DOWN and doors = CLOSED and gears = EXTENDED) implies ax(ag(handle = DOWN and doors = CLOSED and gears = EXTENDED)))
-    require
-      handle_status = is_handle_down
-      door_status = is_door_closed
-      gear_status = is_gear_extended
-    do
-      main
     ensure
+      is_consistent
       handle_status = is_handle_down
-      door_status = is_door_closed
       gear_status = is_gear_extended
+      door_status = is_door_closed
     end
 
   r12_bis
       -- If the handle is up and stays up, the doors will close and the gears will retract
       -- in not more than MAX_INT runs of the main routine:
-      -- ag(ag(handle = UP) implies af[MAX_INT](gears = RETRACTED and doors = CLOSED))
+      -- (gears = RETRACTED and doors = CLOSED) R[MAX_INT] (handle = UP)
     require
       is_consistent
+      handle_status = is_handle_up
     local
       steps: INTEGER
     do
       from
         steps := 0
       until
+        (not is_consistent) or else
         (handle_status /= is_handle_up) or else
         (door_status = is_door_closed and gear_status = is_gear_retracted) or else
         (steps = steps.max_value)
@@ -249,24 +212,11 @@ feature {NONE} -- Representations of the requirements
         main
         steps := steps + 1
       end
-
-      check (handle_status = is_handle_up) implies (steps < steps.max_value) end
-    end
-
-  r12_bis_stability
-      -- If the handle is up, the doors are closed and the gears are retracted,
-      -- the system will maintain this state:
-      -- ag(ag(handle = UP and doors = CLOSED and gears = RETRACTED) implies ax(ag(handle = UP and doors = CLOSED and gears = RETRACTED)))
-    require
-      handle_status = is_handle_up
-      door_status = is_door_closed
-      gear_status = is_gear_retracted
-    do
-      main
     ensure
+      is_consistent
       handle_status = is_handle_up
-      door_status = is_door_closed
       gear_status = is_gear_retracted
+      door_status = is_door_closed
     end
 
   r21
