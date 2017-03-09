@@ -205,7 +205,7 @@ f_holds_next
 
 \begin{figure}
 \begin{tabular}{c c c}
-$\Diamond f$
+$\Diamond[k] f$
 &
 $\Longrightarrow$
 &
@@ -217,7 +217,7 @@ f_eventually_holds
     from
       steps := 0
     until
-      f or else steps = steps.max_value
+      f or else steps = k
     loop
       main
       steps := steps + 1
@@ -234,7 +234,7 @@ f_eventually_holds
 
 \begin{figure}
 \begin{tabular}{c c c}
-$f \mathcal{U} g$
+$f \mathcal{U}[k] g$
 &
 $\Longrightarrow$
 &
@@ -246,7 +246,7 @@ f_holds_until_g
     from
       steps := 0
     until
-      not f or else g or else steps = steps.max_value
+      not f or else g or else steps = k
     loop
       main
       steps := steps + 1
@@ -262,7 +262,7 @@ f_holds_until_g
 
 \begin{figure}
 \begin{tabular}{c c c}
-$f \mathcal{R} g$
+$f \mathcal{R}[k] g$
 &
 $\Longrightarrow$
 &
@@ -274,7 +274,7 @@ f_releases_g
     from
       steps := 0
     until
-      not g or else f or else steps = steps.max_value
+      not g or else f or else steps = k
     loop
       main
       steps := steps + 1
@@ -291,6 +291,76 @@ f_releases_g
 
 \section{Applying the translation scheme to the landing gear example}
 \label{sec:applying_to_example}
+
+\begin{figure}
+\begin{lstlisting}
+r11_bis
+  -- If the handle is down and stays down, the doors will close and the gears
+  -- extend in not more than MAX_INT runs of the main routine:
+  -- (gears=EXTENDED and doors=CLOSED) R[MAX_INT] (handle=DOWN)
+  require
+    is_consistent  
+  	handle_status = is_handle_down
+  local
+    steps: INTEGER
+  do
+    from
+      steps := 0
+    until
+      (not is_consistent) or else
+      (handle_status /= is_handle_down) or else
+      (door_status = is_door_closed and gear_status = is_gear_extended) or else
+      (steps = steps.max_value)
+    loop
+      main
+      steps := steps + 1
+    end
+  ensure
+  	is_consistent  
+    handle_status = is_handle_down
+    gear_status = is_gear_extended
+    door_status = is_door_closed
+  end
+\end{lstlisting}
+\caption{Translation of the ``r11\_bis" requirement.}
+\label{fig:r11_bis_translation}
+\end{figure}
+
+
+\begin{figure}
+\begin{lstlisting}
+r12_bis
+  -- If the handle is up and stays up, the doors will close and the gears
+  -- retract in not more than MAX_INT runs of the main routine:
+  -- (gears=RETRACTED and doors=CLOSED) R[MAX_INT] (handle=UP)
+  require
+    is_consistent
+  	is_handle_status = is_handle_up
+  local
+    steps: INTEGER
+  do
+    from
+      steps := 0
+    until
+      (not is_consistent) or else
+      (handle_status /= is_handle_up) or else
+      (door_status = is_door_closed and gear_status = is_gear_retracted) or else
+      (steps = steps.max_value)
+    loop
+      main
+      steps := steps + 1
+    end
+  ensure
+  	is_consistent
+    handle_status = is_handle_up
+    gear_status = is_gear_retracted
+    door_status = is_door_closed
+  end
+
+\end{lstlisting}
+\caption{Translation of the ``r12\_bis" requirement.}
+\label{fig:r12_bis_translation}
+\end{figure}
 
 
 \section{Limitations of the translation scheme and AutoProof}
