@@ -220,29 +220,57 @@ feature {NONE} -- Representations of the requirements
     end
 
   r21
-      -- If the handle is down, then in the next state
-      -- the gears will not be retracting:
-      -- (handle = DOWN) implies O(gears != RETRACTING)
+      -- If the handle is up and stays up, the gears will not
+      -- be extending after one run of the main routine:
+      -- (gears != EXTENDING) R[1] (handle = UP)
     require
-      handle_status = is_handle_down
       is_consistent
+      handle_status = is_handle_up
+    local
+      steps: INTEGER
     do
-      main
+      from
+        steps := 0
+      until
+        (not is_consistent) or else
+        (handle_status /= is_handle_up) or else
+        (gear_status /= is_gear_extending) or else
+        (steps = 1)
+      loop
+        main
+        steps := steps + 1
+      end
     ensure
-      gear_status /= is_gear_retracting
+      is_consistent
+      handle_status = is_handle_up
+      gear_status /= is_gear_extending
     end
 
   r22
-      -- If the handle is up, then in the next state
-      -- the gears will not be extending:
-      -- (handle = UP) implies O(gears != EXTENDING)
+      -- If the handle is down and stays down, the gears will not
+      -- be retracting after one run of the main routine:
+      -- (gears != RETRACTING) R[1] (handle = DOWN)
     require
-      handle_status = is_handle_up
       is_consistent
+      handle_status = is_handle_down
+    local
+      steps: INTEGER
     do
-      main
+      from
+        steps := 0
+      until
+        (not is_consistent) or else
+        (handle_status /= is_handle_down) or else
+        (gear_status /= is_gear_retracting) or else
+        (steps = 1)
+      loop
+        main
+        steps := steps + 1
+      end
     ensure
-      gear_status /= is_gear_extending
+      is_consistent
+      handle_status = is_handle_down
+      gear_status /= is_gear_retracting
     end
 
 invariant
