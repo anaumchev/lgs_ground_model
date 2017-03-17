@@ -3,17 +3,17 @@ note explicit: "all" -- Ignore (verification-related annotations)
 class GROUND_MODEL
 feature {NONE} -- State ranges
 
-  -- Handle state range
+-- Handle state range
   is_handle_up: INTEGER = 0
   is_handle_down: INTEGER = 1
 
-  -- Door state range
+-- Door state range
   is_door_closed: INTEGER = 2
   is_door_opening: INTEGER = 3
   is_door_open: INTEGER = 4
   is_door_closing: INTEGER = 5
 
-  -- Gear state range
+-- Gear state range
   is_gear_retracting: INTEGER = 6
   is_gear_retracted: INTEGER = 7
   is_gear_extending: INTEGER = 8
@@ -28,7 +28,7 @@ feature {NONE} -- State space
 feature {NONE} -- Consistency criteria
 
   is_consistent: BOOLEAN
-      -- There is no "|" notation in Eiffel, thus have to check the ranges explicitly
+  -- There is no "|" notation in Eiffel, thus have to check the ranges explicitly
     note status: functional
     do
       Result := ((handle_status = is_handle_up or handle_status = is_handle_down) and
@@ -41,12 +41,12 @@ feature {NONE} -- Consistency criteria
 feature {NONE} -- Operations on doors
 
   close_door
-      -- Closing the doors.
+  -- Closing the doors.
     do
-      -- Ignore (verification-related annotations)
+  -- Ignore (verification-related annotations)
       check assume:observers.is_empty end
       check assume:is_open end
-      -- Meaningful instructions
+  -- Meaningful instructions
       inspect door_status
       when is_door_open then
         door_status := is_door_closing
@@ -59,13 +59,13 @@ feature {NONE} -- Operations on doors
     end
 
   open_door
-      -- Opening the doors.
+  -- Opening the doors.
     do
-      -- Ignore (verification-related annotations)
+  -- Ignore (verification-related annotations)
       check assume:observers.is_empty end
       check assume:is_open end
 
-      -- Meaningful instructions
+  -- Meaningful instructions
       inspect door_status
       when is_door_closed then
         door_status := is_door_opening
@@ -80,13 +80,13 @@ feature {NONE} -- Operations on doors
 feature {NONE} -- Operations on gears
 
   retract
-      -- Gears retraction.
+  -- Gears retraction.
     do
-      -- Ignore (verification-related annotations)
+  -- Ignore (verification-related annotations)
       check assume:observers.is_empty end
       check assume:is_open end
 
-      -- Meaningful instructions
+  -- Meaningful instructions
       if gear_status /= is_gear_retracted then
         open_door
         if door_status = is_door_open then
@@ -106,13 +106,13 @@ feature {NONE} -- Operations on gears
     end
 
   extend
-      -- Gears extension.
+  -- Gears extension.
     do
-      -- Ignore (verification-related annotations)
+  -- Ignore (verification-related annotations)
       check assume:observers.is_empty end
       check assume:is_open end
 
-      -- Meaningful instructions
+  -- Meaningful instructions
       if gear_status /= is_gear_extended then
         open_door
         if door_status = is_door_open then
@@ -134,26 +134,26 @@ feature {NONE} -- Operations on gears
 feature -- The top-level logic 
 
   init
-      -- Initialization of the system.
+  -- Initialization of the system.
     do
-      -- Ignore (verification-related annotations)
+  -- Ignore (verification-related annotations)
       check assume:observers.is_empty end
       check assume:is_open end
 
-      -- Meaningful instructions
+  -- Meaningful instructions
       handle_status := is_handle_down
       door_status := is_door_closed
       gear_status := is_gear_extended
     end
 
   main
-      -- The main routine that will infinitely react to the handle changes.
+  -- The main routine that will infinitely react to the handle changes.
     do
-      -- Ignore (verification-related annotations)
+  -- Ignore (verification-related annotations)
       check assume:observers.is_empty end
       check assume:is_open end
 
-      -- Meaningful instructions
+  -- Meaningful instructions
       if handle_status = is_handle_up then
         retract
       elseif handle_status = is_handle_down then
@@ -164,9 +164,9 @@ feature -- The top-level logic
 feature {NONE} -- Representations of the requirements
 
   r11_bis
-      -- If the handle is down and stays down, the doors will close and the gears extend
-      -- in not more than MAX_INT steps:
-      -- (gears = EXTENDED and doors = CLOSED) R[MAX_INT] (handle = DOWN)
+  -- If the handle is down and stays down, the doors will close and the gears extend
+  -- in not more than MAX_INT steps:
+  -- (handle = DOWN) U[MAX_INT] (handle = DOWN and gears = EXTENDED and doors = CLOSED)
     require
       is_consistent
       handle_status = is_handle_down
@@ -192,9 +192,9 @@ feature {NONE} -- Representations of the requirements
     end
 
   r12_bis
-      -- If the handle is up and stays up, the doors will close and the gears will retract
-      -- in not more than MAX_INT runs of the main routine:
-      -- (gears = RETRACTED and doors = CLOSED) R[MAX_INT] (handle = UP)
+  -- If the handle is up and stays up, the doors will close and the gears will retract
+  -- in not more than MAX_INT runs of the main routine:
+  -- (handle = UP) U[MAX_INT] (handle = UP and gears = RETRACTED and doors = CLOSED)
     require
       is_consistent
       handle_status = is_handle_up
@@ -220,9 +220,9 @@ feature {NONE} -- Representations of the requirements
     end
 
   r21
-      -- If the handle is up and stays up, the gears will not
-      -- be extending after one run of the main routine:
-      -- (gears != EXTENDING) R[1] (handle = UP)
+  -- If the handle is up and stays up, the gears will not
+  -- be extending after one run of the main routine:
+  -- (gears != EXTENDING) R[1] (handle = UP)
     require
       is_consistent
       handle_status = is_handle_up
@@ -247,9 +247,9 @@ feature {NONE} -- Representations of the requirements
     end
 
   r22
-      -- If the handle is down and stays down, the gears will not
-      -- be retracting after one run of the main routine:
-      -- (gears != RETRACTING) R[1] (handle = DOWN)
+  -- If the handle is down and stays down, the gears will not
+  -- be retracting after one run of the main routine:
+  -- (gears != RETRACTING) R[1] (handle = DOWN)
     require
       is_consistent
       handle_status = is_handle_down
@@ -274,6 +274,6 @@ feature {NONE} -- Representations of the requirements
     end
 
 invariant
-  -- Ignore (verification-related annotations)
+-- Ignore (verification-related annotations)
   subjects = []  
 end
