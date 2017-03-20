@@ -4,26 +4,26 @@ class GROUND_MODEL
 feature {NONE} -- State ranges
 
 -- Handle state range
-  is_handle_up: INTEGER = 0
-  is_handle_down: INTEGER = 1
+  is_handle_up: NATURAL = 0
+  is_handle_down: NATURAL = 1
 
 -- Door state range
-  is_door_closed: INTEGER = 2
-  is_door_opening: INTEGER = 3
-  is_door_open: INTEGER = 4
-  is_door_closing: INTEGER = 5
+  is_door_closed: NATURAL = 2
+  is_door_opening: NATURAL = 3
+  is_door_open: NATURAL = 4
+  is_door_closing: NATURAL = 5
 
 -- Gear state range
-  is_gear_retracting: INTEGER = 6
-  is_gear_retracted: INTEGER = 7
-  is_gear_extending: INTEGER = 8
-  is_gear_extended: INTEGER = 9
+  is_gear_retracting: NATURAL = 6
+  is_gear_retracted: NATURAL = 7
+  is_gear_extending: NATURAL = 8
+  is_gear_extended: NATURAL = 9
 
 feature {NONE} -- State space
 
-  handle_status: INTEGER
-  door_status: INTEGER
-  gear_status: INTEGER
+  handle_status: NATURAL
+  door_status: NATURAL
+  gear_status: NATURAL
 
 feature {NONE} -- Consistency criteria
 
@@ -171,7 +171,7 @@ feature {NONE} -- Representations of the requirements
       is_consistent
       handle_status = is_handle_down
     local
-      steps: INTEGER
+      steps: NATURAL
     do
       from
         steps := 0
@@ -199,7 +199,7 @@ feature {NONE} -- Representations of the requirements
       is_consistent
       handle_status = is_handle_up
     local
-      steps: INTEGER
+      steps: NATURAL
     do
       from
         steps := 0
@@ -222,12 +222,12 @@ feature {NONE} -- Representations of the requirements
   r21
   -- If the handle is up and stays up, the gears will not
   -- be extending after one run of the main routine:
-  -- (gears != EXTENDING) R[1] (handle = UP)
+  -- (handle = UP) U[1] (handle = UP and gears != EXTENDING)
     require
       is_consistent
       handle_status = is_handle_up
     local
-      steps: INTEGER
+      steps: NATURAL
     do
       from
         steps := 0
@@ -249,12 +249,12 @@ feature {NONE} -- Representations of the requirements
   r22
   -- If the handle is down and stays down, the gears will not
   -- be retracting after one run of the main routine:
-  -- (gears != RETRACTING) R[1] (handle = DOWN)
+  -- (handle = DOWN) U[1] (handle = DOWN and gears != RETRACTING)
     require
       is_consistent
       handle_status = is_handle_down
     local
-      steps: INTEGER
+      steps: NATURAL
     do
       from
         steps := 0
