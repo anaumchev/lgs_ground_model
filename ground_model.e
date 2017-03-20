@@ -32,21 +32,21 @@ feature {NONE} -- Consistency criteria
     note status: functional
     do
       Result := ((handle_status = is_handle_up or handle_status = is_handle_down) and
-                (door_status = is_door_closed or door_status = is_door_opening or door_status = is_door_open or door_status = is_door_closing) and
-                (gear_status = is_gear_extended or gear_status = is_gear_extending or gear_status = is_gear_retracted or gear_status = is_gear_retracting) and
-                ((gear_status = is_gear_extending or gear_status = is_gear_retracting) implies door_status = is_door_open) and
-                (door_status = is_door_closed implies (gear_status = is_gear_extended or gear_status = is_gear_retracted)))
+        (door_status = is_door_closed or door_status = is_door_opening or door_status = is_door_open or door_status = is_door_closing) and
+        (gear_status = is_gear_extended or gear_status = is_gear_extending or gear_status = is_gear_retracted or gear_status = is_gear_retracting) and
+        ((gear_status = is_gear_extending or gear_status = is_gear_retracting) implies door_status = is_door_open) and
+        (door_status = is_door_closed implies (gear_status = is_gear_extended or gear_status = is_gear_retracted)))
     end
 
-feature {NONE} -- Operations on doors
+feature -- Operations on doors
 
   close_door
   -- Closing the doors.
     do
-  -- Ignore (verification-related annotations)
+    -- Ignore (verification-related annotations)
       check assume:observers.is_empty end
       check assume:is_open end
-  -- Meaningful instructions
+    -- Meaningful instructions
       inspect door_status
       when is_door_open then
         door_status := is_door_closing
@@ -61,11 +61,10 @@ feature {NONE} -- Operations on doors
   open_door
   -- Opening the doors.
     do
-  -- Ignore (verification-related annotations)
+    -- Ignore (verification-related annotations)
       check assume:observers.is_empty end
       check assume:is_open end
-
-  -- Meaningful instructions
+    -- Meaningful instructions
       inspect door_status
       when is_door_closed then
         door_status := is_door_opening
@@ -77,16 +76,15 @@ feature {NONE} -- Operations on doors
       end
     end
 
-feature {NONE} -- Operations on gears
+feature -- Operations on gears
 
   retract
   -- Gears retraction.
     do
-  -- Ignore (verification-related annotations)
+    -- Ignore (verification-related annotations)
       check assume:observers.is_empty end
       check assume:is_open end
-
-  -- Meaningful instructions
+    -- Meaningful instructions
       if gear_status /= is_gear_retracted then
         open_door
         if door_status = is_door_open then
@@ -108,11 +106,10 @@ feature {NONE} -- Operations on gears
   extend
   -- Gears extension.
     do
-  -- Ignore (verification-related annotations)
+    -- Ignore (verification-related annotations)
       check assume:observers.is_empty end
       check assume:is_open end
-
-  -- Meaningful instructions
+    -- Meaningful instructions
       if gear_status /= is_gear_extended then
         open_door
         if door_status = is_door_open then
@@ -136,11 +133,10 @@ feature -- The top-level logic
   init
   -- Initialization of the system.
     do
-  -- Ignore (verification-related annotations)
+    -- Ignore (verification-related annotations)
       check assume:observers.is_empty end
       check assume:is_open end
-
-  -- Meaningful instructions
+    -- Meaningful instructions
       handle_status := is_handle_down
       door_status := is_door_closed
       gear_status := is_gear_extended
@@ -149,11 +145,10 @@ feature -- The top-level logic
   main
   -- The main routine that will infinitely react to the handle changes.
     do
-  -- Ignore (verification-related annotations)
+    -- Ignore (verification-related annotations)
       check assume:observers.is_empty end
       check assume:is_open end
-
-  -- Meaningful instructions
+    -- Meaningful instructions
       if handle_status = is_handle_up then
         retract
       elseif handle_status = is_handle_down then
@@ -161,7 +156,7 @@ feature -- The top-level logic
       end
     end
 
-feature {NONE} -- Representations of the requirements
+feature -- Representations of the requirements
 
   r11_bis
   -- If the handle is down and stays down, the doors will close and the gears extend
