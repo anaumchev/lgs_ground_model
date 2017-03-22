@@ -161,7 +161,7 @@ feature {NONE} -- Representations of the requirements
   r11_bis
   -- If the handle is down and stays down, the doors will close and the gears extend
   -- in not more than MAX_INT steps:
-  -- (handle = DOWN) U[MAX_INT] (handle = DOWN and gears = EXTENDED and doors = CLOSED)
+  -- (handle=DOWN)U[MAX_INT](handle=DOWN and gears=EXTENDED and doors=CLOSED)
     local
       steps: NATURAL
     do
@@ -188,7 +188,7 @@ feature {NONE} -- Representations of the requirements
   r12_bis
   -- If the handle is up and stays up, the doors will close and the gears will retract
   -- in not more than MAX_INT runs of the main routine:
-  -- (handle = UP) U[MAX_INT] (handle = UP and gears = RETRACTED and doors = CLOSED)
+  -- (handle=UP)U[MAX_INT](handle=UP and gears=RETRACTED and doors=CLOSED)
     local
       steps: NATURAL
     do
@@ -215,7 +215,7 @@ feature {NONE} -- Representations of the requirements
   r21
   -- If the handle is up and stays up, the gears will not
   -- be extending after one run of the main routine:
-  -- (handle = UP) U[1] (handle = UP and gears != EXTENDING)
+  -- (handle=UP)U[1](handle=UP and gears!=EXTENDING)
     local
       steps: NATURAL
     do
@@ -241,7 +241,7 @@ feature {NONE} -- Representations of the requirements
   r22
   -- If the handle is down and stays down, the gears will not
   -- be retracting after one run of the main routine:
-  -- (handle = DOWN) U[1] (handle = DOWN and gears != RETRACTING)
+  -- (handle=DOWN)U[1](handle=DOWN and gears!=RETRACTING)
     local
       steps: NATURAL
     do
