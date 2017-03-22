@@ -155,8 +155,8 @@ feature -- The top-level logic
 feature {NONE} -- Representations of the requirements
 
   r11_bis
-  -- If the handle is down and stays down, the doors will close and the gears extend
-  -- in not more than MAX_INT steps:
+  -- If the handle is down and stays down, the doors will close and the gears
+  -- extend in not more than MAX_INT steps:
   -- (handle=DOWN)U[MAX_INT](handle=DOWN and gears=EXTENDED and doors=CLOSED)
     local
       steps: NATURAL
@@ -182,8 +182,8 @@ feature {NONE} -- Representations of the requirements
     end
 
   r12_bis
-  -- If the handle is up and stays up, the doors will close and the gears will retract
-  -- in not more than MAX_INT runs of the main routine:
+  -- If the handle is up and stays up, the doors will close and the gears
+  -- retract in not more than MAX_INT runs of the main routine:
   -- (handle=UP)U[MAX_INT](handle=UP and gears=RETRACTED and doors=CLOSED)
     local
       steps: NATURAL
