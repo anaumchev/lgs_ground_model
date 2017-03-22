@@ -162,110 +162,106 @@ feature {NONE} -- Representations of the requirements
   -- If the handle is down and stays down, the doors will close and the gears extend
   -- in not more than MAX_INT steps:
   -- (handle = DOWN) U[MAX_INT] (handle = DOWN and gears = EXTENDED and doors = CLOSED)
-    require
-      is_consistent
-      handle_status = is_handle_down
     local
       steps: NATURAL
     do
-      from
-        steps := 0
-      until
-        (not is_consistent) or else
-        (handle_status /= is_handle_down) or else
-        (door_status = is_door_closed and gear_status = is_gear_extended) or else
-        (steps = steps.max_value)
-      loop
-        main
-        steps := steps + 1
+      if (is_consistent and then
+          handle_status = is_handle_down) then      
+        from
+          steps := 0
+        until
+          (not is_consistent) or else
+          (handle_status /= is_handle_down) or else
+          (door_status = is_door_closed and gear_status = is_gear_extended) or else
+          (steps = steps.max_value)
+        loop
+          main
+          steps := steps + 1
+        end
+        check is_consistent end
+        check handle_status = is_handle_down end
+        check gear_status = is_gear_extended end
+        check door_status = is_door_closed end
       end
-    ensure
-      is_consistent
-      handle_status = is_handle_down
-      gear_status = is_gear_extended
-      door_status = is_door_closed
     end
 
   r12_bis
   -- If the handle is up and stays up, the doors will close and the gears will retract
   -- in not more than MAX_INT runs of the main routine:
   -- (handle = UP) U[MAX_INT] (handle = UP and gears = RETRACTED and doors = CLOSED)
-    require
-      is_consistent
-      handle_status = is_handle_up
     local
       steps: NATURAL
     do
-      from
-        steps := 0
-      until
-        (not is_consistent) or else
-        (handle_status /= is_handle_up) or else
-        (door_status = is_door_closed and gear_status = is_gear_retracted) or else
-        (steps = steps.max_value)
-      loop
-        main
-        steps := steps + 1
+      if (is_consistent and then
+          handle_status = is_handle_up) then
+        from
+          steps := 0
+        until
+          (not is_consistent) or else
+          (handle_status /= is_handle_up) or else
+          (door_status = is_door_closed and gear_status = is_gear_retracted) or else
+          (steps = steps.max_value)
+        loop
+          main
+          steps := steps + 1
+        end
+        check is_consistent end
+        check handle_status = is_handle_up end
+        check gear_status = is_gear_retracted end
+        check door_status = is_door_closed end
       end
-    ensure
-      is_consistent
-      handle_status = is_handle_up
-      gear_status = is_gear_retracted
-      door_status = is_door_closed
     end
 
   r21
   -- If the handle is up and stays up, the gears will not
   -- be extending after one run of the main routine:
   -- (handle = UP) U[1] (handle = UP and gears != EXTENDING)
-    require
-      is_consistent
-      handle_status = is_handle_up
     local
       steps: NATURAL
     do
-      from
-        steps := 0
-      until
-        (not is_consistent) or else
-        (handle_status /= is_handle_up) or else
-        (gear_status /= is_gear_extending) or else
-        (steps = 1)
-      loop
-        main
-        steps := steps + 1
+      if (is_consistent and then
+          handle_status = is_handle_up) then
+        from
+          steps := 0
+        until
+          (not is_consistent) or else
+          (handle_status /= is_handle_up) or else
+          (gear_status /= is_gear_extending) or else
+          (steps = 1)
+        loop
+          main
+          steps := steps + 1
+        end
+        check is_consistent end
+        check handle_status = is_handle_up end
+        check gear_status /= is_gear_extending end
       end
-    ensure
-      is_consistent
-      handle_status = is_handle_up
-      gear_status /= is_gear_extending
     end
 
   r22
   -- If the handle is down and stays down, the gears will not
   -- be retracting after one run of the main routine:
   -- (handle = DOWN) U[1] (handle = DOWN and gears != RETRACTING)
-    require
-      is_consistent
-      handle_status = is_handle_down
     local
       steps: NATURAL
     do
-      from
-        steps := 0
-      until
-        (not is_consistent) or else
-        (handle_status /= is_handle_down) or else
-        (gear_status /= is_gear_retracting) or else
-        (steps = 1)
-      loop
-        main
-        steps := steps + 1
+      if (is_consistent and then
+          handle_status = is_handle_down) then
+        from
+          steps := 0
+        until
+          (not is_consistent) or else
+          (handle_status /= is_handle_down) or else
+          (gear_status /= is_gear_retracting) or else
+          (steps = 1)
+        loop
+          main
+          steps := steps + 1
+        end
+        check is_consistent end
+        check handle_status = is_handle_down end
+        check gear_status /= is_gear_retracting end
       end
-    ensure
-      is_consistent
-      handle_status = is_handle_down
-      gear_status /= is_gear_retracting
     end
 
 invariant
