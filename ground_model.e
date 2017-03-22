@@ -38,7 +38,7 @@ feature {NONE} -- Consistency criteria
         (door_status = is_door_closed implies (gear_status = is_gear_extended or gear_status = is_gear_retracted)))
     end
 
-feature -- Operations on doors
+feature {NONE} -- Operations on doors
 
   close_door
   -- Closing the doors.
@@ -76,7 +76,7 @@ feature -- Operations on doors
       end
     end
 
-feature -- Operations on gears
+feature {NONE} -- Operations on gears
 
   retract
   -- Gears retraction.
@@ -156,7 +156,7 @@ feature -- The top-level logic
       end
     end
 
-feature -- Representations of the requirements
+feature {NONE} -- Representations of the requirements
 
   r11_bis
   -- If the handle is down and stays down, the doors will close and the gears
