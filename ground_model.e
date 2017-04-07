@@ -27,7 +27,7 @@ feature {NONE} -- State space
 
 feature {NONE} -- Consistency criteria
 
-  is_consistent: BOOLEAN
+  is_normal_mode: BOOLEAN
   -- There is no "|" notation in Eiffel, thus have to check the ranges explicitly
     note status: functional
     do
@@ -163,7 +163,7 @@ feature {NONE} -- Representations of the requirements
   -- extend in not more than MAX_INT steps:
   -- (handle=DOWN)U[MAX_INT](handle=DOWN and gears=EXTENDED and doors=CLOSED)
     require
-      is_consistent
+      is_normal_mode
       handle_status = is_handle_down
     local
       steps: NATURAL
@@ -171,7 +171,7 @@ feature {NONE} -- Representations of the requirements
       from
         steps := 0
       until
-        (not is_consistent) or else
+        (not is_normal_mode) or else
         (handle_status /= is_handle_down) or else
         (door_status = is_door_closed and gear_status = is_gear_extended) or else
         (steps = steps.max_value)
@@ -180,7 +180,7 @@ feature {NONE} -- Representations of the requirements
         steps := steps + 1
       end
     ensure
-      is_consistent
+      is_normal_mode
       handle_status = is_handle_down
       gear_status = is_gear_extended
       door_status = is_door_closed
@@ -191,7 +191,7 @@ feature {NONE} -- Representations of the requirements
   -- retract in not more than MAX_INT runs of the main routine:
   -- (handle=UP)U[MAX_INT](handle=UP and gears=RETRACTED and doors=CLOSED)
     require
-      is_consistent
+      is_normal_mode
       handle_status = is_handle_up
     local
       steps: NATURAL
@@ -199,7 +199,7 @@ feature {NONE} -- Representations of the requirements
       from
         steps := 0
       until
-        (not is_consistent) or else
+        (not is_normal_mode) or else
         (handle_status /= is_handle_up) or else
         (door_status = is_door_closed and gear_status = is_gear_retracted) or else
         (steps = steps.max_value)
@@ -208,7 +208,7 @@ feature {NONE} -- Representations of the requirements
         steps := steps + 1
       end
     ensure
-      is_consistent
+      is_normal_mode
       handle_status = is_handle_up
       gear_status = is_gear_retracted
       door_status = is_door_closed
@@ -219,7 +219,7 @@ feature {NONE} -- Representations of the requirements
   -- be extending after one run of the main routine:
   -- (handle=UP)U[1](handle=UP and gears!=EXTENDING)
     require
-      is_consistent
+      is_normal_mode
       handle_status = is_handle_up
     local
       steps: NATURAL
@@ -227,7 +227,7 @@ feature {NONE} -- Representations of the requirements
       from
         steps := 0
       until
-        (not is_consistent) or else
+        (not is_normal_mode) or else
         (handle_status /= is_handle_up) or else
         (gear_status /= is_gear_extending) or else
         (steps = 1)
@@ -236,7 +236,7 @@ feature {NONE} -- Representations of the requirements
         steps := steps + 1
       end
     ensure
-      is_consistent
+      is_normal_mode
       handle_status = is_handle_up
       gear_status /= is_gear_extending
     end
@@ -246,7 +246,7 @@ feature {NONE} -- Representations of the requirements
   -- be retracting after one run of the main routine:
   -- (handle=DOWN)U[1](handle=DOWN and gears!=RETRACTING)
     require
-      is_consistent
+      is_normal_mode
       handle_status = is_handle_down
     local
       steps: NATURAL
@@ -254,7 +254,7 @@ feature {NONE} -- Representations of the requirements
       from
         steps := 0
       until
-        (not is_consistent) or else
+        (not is_normal_mode) or else
         (handle_status /= is_handle_down) or else
         (gear_status /= is_gear_retracting) or else
         (steps = 1)
@@ -263,7 +263,7 @@ feature {NONE} -- Representations of the requirements
         steps := steps + 1
       end
     ensure
-      is_consistent
+      is_normal_mode
       handle_status = is_handle_down
       gear_status /= is_gear_retracting
     end
