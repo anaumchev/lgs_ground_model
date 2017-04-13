@@ -1,4 +1,4 @@
-# abz2014
+# Landing Gear System ground model specification and requirements in Eiffel
 The project accompanies the article "A contract-based method to specify stimulus-response requirements".
 To verify the examples use the command-line version of AutoProof (http://se.inf.ethz.ch/research/autoproof/manual/#cmd_version) as follows:
 
