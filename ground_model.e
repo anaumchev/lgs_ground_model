@@ -130,18 +130,6 @@ feature {NONE} -- Operations on gears
 
 feature -- The top-level logic 
 
-  init
-  -- Initialization of the system.
-    do
-    -- Ignore (verification-related annotations)
-      check assume:observers.is_empty end
-      check assume:is_open end
-    -- Meaningful instructions
-      handle_status := is_handle_down
-      door_status := is_door_closed
-      gear_status := is_gear_extended
-    end
-
   main
   -- The main routine that will infinitely react to the handle changes.
     do
@@ -159,113 +147,127 @@ feature -- The top-level logic
 feature {NONE} -- Representations of the requirements
 
   r11_bis
-  -- If the handle is down and stays down, the doors will close and the gears
-  -- extend in not more than MAX_INT steps:
-  -- (handle=DOWN)U[MAX_INT](handle=DOWN and gears=EXTENDED and doors=CLOSED)
-    require
-      is_normal_mode
-      handle_status = is_handle_down
+  -- If (is_normal_mode and (handle_status = is_handle_down)) hold and remain,
+  -- ((gear_status = is_gear_extended) and (door_status = is_door_closed)) will hold within 10 steps.
     local
       steps: NATURAL
     do
-      from
-        steps := 0
-      until
-        (not is_normal_mode) or else
-        (handle_status /= is_handle_down) or else
-        (door_status = is_door_closed and gear_status = is_gear_extended) or else
-        (steps = steps.max_value)
-      loop
-        main
-        steps := steps + 1
+      if (is_normal_mode and (handle_status = is_handle_down)) then
+        from
+          steps := 0
+        until
+          (not (is_normal_mode and (handle_status = is_handle_down))) or
+          ((gear_status = is_gear_extended) and (door_status = is_door_closed)) or
+          (steps=10)
+        loop
+          main
+          steps := steps + 1
+        end
+        check
+          (not (is_normal_mode and (handle_status = is_handle_down))) or
+          ((gear_status = is_gear_extended) and (door_status = is_door_closed))
+        end
       end
-    ensure
-      is_normal_mode
-      handle_status = is_handle_down
-      gear_status = is_gear_extended
-      door_status = is_door_closed
     end
 
   r12_bis
-  -- If the handle is up and stays up, the doors will close and the gears
-  -- retract in not more than MAX_INT runs of the main routine:
-  -- (handle=UP)U[MAX_INT](handle=UP and gears=RETRACTED and doors=CLOSED)
-    require
-      is_normal_mode
-      handle_status = is_handle_up
+  -- If (is_normal_mode and (handle_status = is_handle_up)) hold and remain,
+  -- ((gear_status = is_gear_retracted) and (door_status = is_door_closed)) will hold within 10 steps.
     local
       steps: NATURAL
     do
-      from
-        steps := 0
-      until
-        (not is_normal_mode) or else
-        (handle_status /= is_handle_up) or else
-        (door_status = is_door_closed and gear_status = is_gear_retracted) or else
-        (steps = steps.max_value)
-      loop
-        main
-        steps := steps + 1
+      if (is_normal_mode and (handle_status = is_handle_up)) then
+        from
+          steps := 0
+        until
+          (not (is_normal_mode and (handle_status = is_handle_up))) or
+          ((gear_status = is_gear_retracted) and (door_status = is_door_closed)) or
+          (steps=10)
+        loop
+          main
+          steps := steps + 1
+        end
+        check
+          (not (is_normal_mode and (handle_status = is_handle_up))) or
+          ((gear_status = is_gear_retracted) and (door_status = is_door_closed))
+        end
       end
-    ensure
-      is_normal_mode
-      handle_status = is_handle_up
-      gear_status = is_gear_retracted
-      door_status = is_door_closed
     end
 
   r21
-  -- If the handle is up and stays up, the gears will not
-  -- be extending after one run of the main routine:
-  -- (handle=UP)U[1](handle=UP and gears!=EXTENDING)
-    require
-      is_normal_mode
-      handle_status = is_handle_up
+  -- If (is_normal_mode and (handle_status = is_handle_up)) holds and remains,
+  -- (gear_status /= is_gear_extending) will hold within 1 step.
     local
       steps: NATURAL
     do
-      from
-        steps := 0
-      until
-        (not is_normal_mode) or else
-        (handle_status /= is_handle_up) or else
-        (gear_status /= is_gear_extending) or else
-        (steps = 1)
-      loop
-        main
-        steps := steps + 1
+      if (is_normal_mode and (handle_status = is_handle_up)) then
+        from
+          steps := 0
+        until
+          (not (is_normal_mode and (handle_status = is_handle_up))) or
+          (gear_status /= is_gear_extending) or
+          (steps = 1)
+        loop
+          main
+          steps := steps + 1
+        end
+        check
+          (not (is_normal_mode and (handle_status = is_handle_up))) or
+          (gear_status /= is_gear_extending)
+        end
       end
-    ensure
-      is_normal_mode
-      handle_status = is_handle_up
-      gear_status /= is_gear_extending
     end
 
   r22
-  -- If the handle is down and stays down, the gears will not
-  -- be retracting after one run of the main routine:
-  -- (handle=DOWN)U[1](handle=DOWN and gears!=RETRACTING)
-    require
-      is_normal_mode
-      handle_status = is_handle_down
+  -- If (is_normal_mode and (handle_status = is_handle_down)) holds and remains,
+  -- (gear_status /= is_gear_retracting) will hold within 1 step.
     local
       steps: NATURAL
     do
-      from
-        steps := 0
-      until
-        (not is_normal_mode) or else
-        (handle_status /= is_handle_down) or else
-        (gear_status /= is_gear_retracting) or else
-        (steps = 1)
-      loop
-        main
-        steps := steps + 1
+      if (is_normal_mode and (handle_status = is_handle_down)) then
+        from
+          steps := 0
+        until
+          (not (is_normal_mode and (handle_status = is_handle_down))) or
+          (gear_status /= is_gear_retracting) or
+          (steps = 1)
+        loop
+          main
+          steps := steps + 1
+        end
+        check
+          (not (is_normal_mode and (handle_status = is_handle_down))) or
+          (gear_status /= is_gear_retracting)
+        end
       end
-    ensure
-      is_normal_mode
-      handle_status = is_handle_down
-      gear_status /= is_gear_retracting
+    end
+
+  r11_rs
+  -- ((gear_status = is_gear_extended) and (door_status = is_door_closed)) keeps holding under
+  -- (is_normal_mode and (handle_status = is_handle_down))
+    do
+      if ((is_normal_mode and (handle_status = is_handle_down)) and
+           ((gear_status = is_gear_extended) and (door_status = is_door_closed))) then
+        main
+        check
+          ((is_normal_mode and (handle_status = is_handle_down)) implies
+            ((gear_status = is_gear_extended) and (door_status = is_door_closed)))
+        end
+      end
+    end
+
+  r12_rs
+  -- ((gear_status = is_gear_retracted) and (door_status = is_door_closed)) keeps holding under
+  -- (is_normal_mode and (handle_status = is_handle_up))
+    do
+      if ((is_normal_mode and (handle_status = is_handle_up)) and
+           ((gear_status = is_gear_retracted) and (door_status = is_door_closed))) then
+        main
+        check
+          ((is_normal_mode and (handle_status = is_handle_up)) implies
+            ((gear_status = is_gear_retracted) and (door_status = is_door_closed)))
+        end
+      end
     end
 
 invariant
