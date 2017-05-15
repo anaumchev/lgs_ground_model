@@ -27,7 +27,7 @@ feature {NONE} -- State space
 
 feature {NONE} -- Consistency criteria
 
-  is_normal_mode: BOOLEAN
+  system_executes_normally: BOOLEAN
   -- There is no "|" notation in Eiffel, thus have to check the ranges explicitly
     note status: functional
     do
@@ -145,130 +145,178 @@ feature -- The top-level logic
     end
 
 feature {NONE} -- Representations of the requirements
-
+  -- Assume an axiomatically defined function
   time_delta: INTEGER
+  -- that
     do
+  -- nothing
     end
 
-  time_delta_grows_linearly
+  -- Assume that
+  main_increments_time_delta
+  -- in the following sense: given
     local
+  -- variable
       old_time_delta: INTEGER
     do
+  -- perform
       old_time_delta := time_delta
+  -- and then
       main
+  -- finally
       check assume: time_delta = old_time_delta + 1 end
     end
-
+  
+  -- Assume 
   main_preserves_normal_mode
-  -- Let's assume that main preserves normal mode.
+  -- in the following sense:
     do
-      check assume: is_normal_mode end
-      time_delta_grows_linearly
-      check assume: is_normal_mode end
+  -- first
+      check assume: system_executes_normally end
+  -- then assume that
+      main_increments_time_delta
+  -- finally
+      check assume: system_executes_normally end
     end
 
+  -- Assume
   handle_is_up_and_stays_up
-  -- Let's assume the handle is up and stays up.
+  -- in the following sense:
     do
+  -- first
       check assume: handle_status = up_position end
+  -- then assume that
       main_preserves_normal_mode
+  -- finally
       check assume: handle_status = up_position end
     end
 
+  -- Assume
   handle_is_down_and_stays_down
-  -- Let's assume the handle is down and stays down.
+  -- in the following sense:
     do
+  -- first
       check assume: handle_status = down_position end
+  -- then assume that
       main_preserves_normal_mode
+  -- finally
       check assume: handle_status = down_position end
     end
 
+  -- Require
   r11_bis
-  -- If handle_is_down_and_stays_down,
-  -- gear_status = extended_position and door_status = closed_position will hold within 10 steps.
+  -- defined as follows:
     do
       from
+  -- a state that
         check assume: time_delta = 0 end
       until
-        gear_status = extended_position and
-        door_status = closed_position or
-        time_delta = 10
+  -- a state in which
+        gear_status = extended_position and door_status = closed_position
+  -- is reached
+        or else time_delta = 10
       loop
+  -- assuming that
         handle_is_down_and_stays_down
       end
-      check assert_extended: gear_status = extended_position end
-      check assert_closed: door_status = closed_position end
+  -- finally
+      check assert: gear_status = extended_position end
+  -- and then
+      check assert: door_status = closed_position end
     end
 
+  -- Require
   r12_bis
-  -- If handle_is_up_and_stays_up
-  -- gear_status = retracted_position and door_status = closed_position will hold within 10 steps.
+  -- defined as follows:
     do
       from
+  -- a state that
         check assume: time_delta = 0 end
       until
-        gear_status = retracted_position and
-        door_status = closed_position or
-        time_delta = 10
+  -- a state in which
+        gear_status = retracted_position and door_status = closed_position
+  -- is reached
+        or else time_delta = 10
       loop
+  -- assuming that
         handle_is_up_and_stays_up
       end
-      check assert_retracted: gear_status = retracted_position end
-      check assert_closed: door_status = closed_position end
+  -- finally
+      check assert: gear_status = retracted_position end
+  -- and then
+      check assert: door_status = closed_position end
     end
 
+  -- Require
   r21
-  -- If handle_is_up_and_stays_up,
-  -- (gear_status /= extending_state) will hold within 1 step.
+  -- defined as follows:
     do
       from
+  -- a state that
         check assume: time_delta = 0 end
       until
-        gear_status /= extending_state or
-        time_delta = 1
+  -- a state in which
+        gear_status /= extending_state
+  -- is reached
+        or else time_delta = 1
       loop
+  -- assuming that
         handle_is_up_and_stays_up
       end
-      check assert_not_extending: gear_status /= extending_state end
+  -- finally
+      check assert: gear_status /= extending_state end
     end
 
+  -- Require
   r22
-  -- If handle_is_down_and_stays_down,
-  -- (gear_status /= retracting_state) will hold within 1 step.
+  -- defined as follows:
     do
       from
+  -- a state that
         check assume: time_delta = 0 end
       until
-        gear_status /= retracting_state or
-        time_delta = 1
+  -- a state in which
+        gear_status /= retracting_state
+  -- is reached
+        or else time_delta = 1
       loop
+  -- assuming that
         handle_is_down_and_stays_down
       end
-      check assert_not_retracting: gear_status /= retracting_state end
+  -- finally
+      check assert: gear_status /= retracting_state end
     end
 
+  -- Require
   r11_rs
-  -- If handle_is_down_and_stays_down,
-  -- gear_status = extended_position and door_status = closed_position
-  -- will be a stable state.
+  -- defined as follows:
     do
+  -- first
       check assume: gear_status = extended_position end
+  -- and then
       check assume: door_status = closed_position end
+  -- assuming that
       handle_is_down_and_stays_down
-      check assert_extended: gear_status = extended_position end
-      check assert_closed: door_status = closed_position end
+  -- finally
+      check assert: gear_status = extended_position end
+  -- and then
+      check assert: door_status = closed_position end
     end
 
+  --Require
   r12_rs
-  -- If handle_is_up_and_stays_up,
-  -- gear_status = retracted_position and door_status = closed_position
-  -- will be a stable state.
+  -- defined as follows:
     do
+  -- first
       check assume: gear_status = retracted_position end
+  -- and then
       check assume: door_status = closed_position end
+  -- assuming that
       handle_is_up_and_stays_up
-      check assert_retracted: gear_status = retracted_position end
-      check assert_closed: door_status = closed_position end
+  -- finally
+      check assert: gear_status = retracted_position end
+  -- and then
+      check assert: door_status = closed_position end
     end
 
 invariant
