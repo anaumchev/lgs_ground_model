@@ -4,20 +4,20 @@ class GROUND_MODEL_ASSERTIONS
 feature {NONE} -- State ranges
 
 -- Handle state range
-  is_handle_up: NATURAL = 0
-  is_handle_down: NATURAL = 1
+  up_position: NATURAL = 0
+  down_position: NATURAL = 1
 
 -- Door state range
-  is_door_closed: NATURAL = 2
-  is_door_opening: NATURAL = 3
-  is_door_open: NATURAL = 4
-  is_door_closing: NATURAL = 5
+  closed_position: NATURAL = 2
+  opening_state: NATURAL = 3
+  open_position: NATURAL = 4
+  closing_state: NATURAL = 5
 
 -- Gear state range
-  is_gear_retracting: NATURAL = 6
-  is_gear_retracted: NATURAL = 7
-  is_gear_extending: NATURAL = 8
-  is_gear_extended: NATURAL = 9
+  retracting_state: NATURAL = 6
+  retracted_position: NATURAL = 7
+  extending_state: NATURAL = 8
+  extended_position: NATURAL = 9
 
 feature {NONE} -- State space
 
@@ -31,11 +31,11 @@ feature {NONE} -- Consistency criteria
   -- There is no "|" notation in Eiffel, thus have to check the ranges explicitly
     note status: functional
     do
-      Result := ((handle_status = is_handle_up or handle_status = is_handle_down) and
-        (door_status = is_door_closed or door_status = is_door_opening or door_status = is_door_open or door_status = is_door_closing) and
-        (gear_status = is_gear_extended or gear_status = is_gear_extending or gear_status = is_gear_retracted or gear_status = is_gear_retracting) and
-        ((gear_status = is_gear_extending or gear_status = is_gear_retracting) implies door_status = is_door_open) and
-        (door_status = is_door_closed implies (gear_status = is_gear_extended or gear_status = is_gear_retracted)))
+      Result := ((handle_status = up_position or handle_status = down_position) and
+        (door_status = closed_position or door_status = opening_state or door_status = open_position or door_status = closing_state) and
+        (gear_status = extended_position or gear_status = extending_state or gear_status = retracted_position or gear_status = retracting_state) and
+        ((gear_status = extending_state or gear_status = retracting_state) implies door_status = open_position) and
+        (door_status = closed_position implies (gear_status = extended_position or gear_status = retracted_position)))
     end
 
 feature {NONE} -- Operations on doors
@@ -48,12 +48,12 @@ feature {NONE} -- Operations on doors
       check assume:is_open end
     -- Meaningful instructions
       inspect door_status
-      when is_door_open then
-        door_status := is_door_closing
-      when is_door_closing then
-        door_status := is_door_closed
-      when is_door_opening then
-        door_status := is_door_closing
+      when open_position then
+        door_status := closing_state
+      when closing_state then
+        door_status := closed_position
+      when opening_state then
+        door_status := closing_state
       else
       end
     end
@@ -66,12 +66,12 @@ feature {NONE} -- Operations on doors
       check assume:is_open end
     -- Meaningful instructions
       inspect door_status
-      when is_door_closed then
-        door_status := is_door_opening
-      when is_door_closing then
-        door_status := is_door_opening
-      when is_door_opening then
-        door_status := is_door_open
+      when closed_position then
+        door_status := opening_state
+      when closing_state then
+        door_status := opening_state
+      when opening_state then
+        door_status := open_position
       else
       end
     end
@@ -85,16 +85,16 @@ feature {NONE} -- Operations on gears
       check assume:observers.is_empty end
       check assume:is_open end
     -- Meaningful instructions
-      if gear_status /= is_gear_retracted then
+      if gear_status /= retracted_position then
         open_door
-        if door_status = is_door_open then
+        if door_status = open_position then
           inspect gear_status
-          when is_gear_extended then
-            gear_status := is_gear_retracting
-          when is_gear_retracting then
-            gear_status := is_gear_retracted
-          when is_gear_extending then
-            gear_status := is_gear_retracting
+          when extended_position then
+            gear_status := retracting_state
+          when retracting_state then
+            gear_status := retracted_position
+          when extending_state then
+            gear_status := retracting_state
           else
           end
         end
@@ -110,16 +110,16 @@ feature {NONE} -- Operations on gears
       check assume:observers.is_empty end
       check assume:is_open end
     -- Meaningful instructions
-      if gear_status /= is_gear_extended then
+      if gear_status /= extended_position then
         open_door
-        if door_status = is_door_open then
+        if door_status = open_position then
           inspect gear_status
-          when is_gear_retracted then
-            gear_status := is_gear_extending
-          when is_gear_extending then
-            gear_status := is_gear_extended
-          when is_gear_retracting then
-            gear_status := is_gear_extending
+          when retracted_position then
+            gear_status := extending_state
+          when extending_state then
+            gear_status := extended_position
+          when retracting_state then
+            gear_status := extending_state
           else
           end
         end
@@ -137,151 +137,138 @@ feature -- The top-level logic
       check assume:observers.is_empty end
       check assume:is_open end
     -- Meaningful instructions
-      if handle_status = is_handle_up then
+      if handle_status = up_position then
         retract
-      elseif handle_status = is_handle_down then
+      elseif handle_status = down_position then
         extend
       end
     end
 
 feature {NONE} -- Representations of the requirements
 
+  time_delta: INTEGER
+    do
+    end
+
+  time_delta_grows_linearly
+    local
+      old_time_delta: INTEGER
+    do
+      old_time_delta := time_delta
+      main
+      check assume: time_delta = old_time_delta + 1 end
+    end
+
   main_preserves_normal_mode
   -- Let's assume that main preserves normal mode.
     do
       check assume: is_normal_mode end
-
-      main
-
+      time_delta_grows_linearly
       check assume: is_normal_mode end
     end
 
   handle_is_up_and_stays_up
   -- Let's assume the handle is up and stays up.
     do
-      check assume: handle_status = is_handle_up end
-
+      check assume: handle_status = up_position end
       main_preserves_normal_mode
-
-      check assume: handle_status = is_handle_up end
+      check assume: handle_status = up_position end
     end
 
   handle_is_down_and_stays_down
   -- Let's assume the handle is down and stays down.
     do
-      check assume: handle_status = is_handle_down end
-
+      check assume: handle_status = down_position end
       main_preserves_normal_mode
-
-      check assume: handle_status = is_handle_down end
+      check assume: handle_status = down_position end
     end
 
   r11_bis
   -- If handle_is_down_and_stays_down,
-  -- gear_status = is_gear_extended and door_status = is_door_closed will hold within 10 steps.
-    local
-      steps: NATURAL
+  -- gear_status = extended_position and door_status = closed_position will hold within 10 steps.
     do
       from
-        steps := 0
+        check assume: time_delta = 0 end
       until
-        gear_status = is_gear_extended and
-        door_status = is_door_closed or
-        steps = 10
+        gear_status = extended_position and
+        door_status = closed_position or
+        time_delta = 10
       loop
         handle_is_down_and_stays_down
-        steps := steps + 1
       end
-
-      check assert_extended: gear_status = is_gear_extended end
-      check assert_closed: door_status = is_door_closed end
+      check assert_extended: gear_status = extended_position end
+      check assert_closed: door_status = closed_position end
     end
 
   r12_bis
   -- If handle_is_up_and_stays_up
-  -- gear_status = is_gear_retracted and door_status = is_door_closed will hold within 10 steps.
-    local
-      steps: NATURAL
+  -- gear_status = retracted_position and door_status = closed_position will hold within 10 steps.
     do
       from
-        steps := 0
+        check assume: time_delta = 0 end
       until
-        gear_status = is_gear_retracted and
-        door_status = is_door_closed or
-        steps=10
+        gear_status = retracted_position and
+        door_status = closed_position or
+        time_delta = 10
       loop
         handle_is_up_and_stays_up
-        steps := steps + 1
       end
-
-      check assert_retracted: gear_status = is_gear_retracted end
-      check assert_closed: door_status = is_door_closed end
+      check assert_retracted: gear_status = retracted_position end
+      check assert_closed: door_status = closed_position end
     end
 
   r21
   -- If handle_is_up_and_stays_up,
-  -- (gear_status /= is_gear_extending) will hold within 1 step.
-    local
-      steps: NATURAL
+  -- (gear_status /= extending_state) will hold within 1 step.
     do
       from
-        steps := 0
+        check assume: time_delta = 0 end
       until
-        gear_status /= is_gear_extending or
-        steps = 1
+        gear_status /= extending_state or
+        time_delta = 1
       loop
         handle_is_up_and_stays_up
-        steps := steps + 1
       end
-
-      check assert_not_extending: gear_status /= is_gear_extending end
+      check assert_not_extending: gear_status /= extending_state end
     end
 
   r22
   -- If handle_is_down_and_stays_down,
-  -- (gear_status /= is_gear_retracting) will hold within 1 step.
-    local
-      steps: NATURAL
+  -- (gear_status /= retracting_state) will hold within 1 step.
     do
       from
-        steps := 0
+        check assume: time_delta = 0 end
       until
-        gear_status /= is_gear_retracting or
-        steps = 1
+        gear_status /= retracting_state or
+        time_delta = 1
       loop
         handle_is_down_and_stays_down
-        steps := steps + 1
       end
-      
-      check assert_not_retracting: gear_status /= is_gear_retracting end
+      check assert_not_retracting: gear_status /= retracting_state end
     end
 
   r11_rs
   -- If handle_is_down_and_stays_down,
-  -- gear_status = is_gear_extended and door_status = is_door_closed
+  -- gear_status = extended_position and door_status = closed_position
   -- will be a stable state.
     do
-      check assume: gear_status = is_gear_extended end
-      check assume: door_status = is_door_closed end
-
+      check assume: gear_status = extended_position end
+      check assume: door_status = closed_position end
       handle_is_down_and_stays_down
-
-      check assert_extended: gear_status = is_gear_extended end
-      check assert_closed: door_status = is_door_closed end
+      check assert_extended: gear_status = extended_position end
+      check assert_closed: door_status = closed_position end
     end
 
   r12_rs
   -- If handle_is_up_and_stays_up,
-  -- gear_status = is_gear_retracted and door_status = is_door_closed
+  -- gear_status = retracted_position and door_status = closed_position
   -- will be a stable state.
     do
-      check assume: gear_status = is_gear_retracted end
-      check assume: door_status = is_door_closed end
-
+      check assume: gear_status = retracted_position end
+      check assume: door_status = closed_position end
       handle_is_up_and_stays_up
-
-      check assert_retracted: gear_status = is_gear_retracted end
-      check assert_closed: door_status = is_door_closed end
+      check assert_retracted: gear_status = retracted_position end
+      check assert_closed: door_status = closed_position end
     end
 
 invariant
