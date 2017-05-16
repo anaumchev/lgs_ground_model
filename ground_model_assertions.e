@@ -144,183 +144,192 @@ feature -- The top-level logic
       end
     end
 
-feature {NONE} -- Requirements programming
+-- Requirements
+feature {NONE}
 
   -- Assume an axiomatically defined function
   time_delta: INTEGER
-  -- that
+    -- that
     do
-  -- nothing
+    -- nothing
     end
 
   -- Assume that
   main_increments_time_delta
-  -- in the following sense: given
+    -- in the following sense: given
     local
-  -- variable
+      -- variable
       old_time_delta: INTEGER
     do
-  -- perform
+      -- perform
       old_time_delta := time_delta
-  -- and then
+      -- and then
       main
-  -- finally
+      -- finally
       check assume: time_delta = old_time_delta + 1 end
     end
   
   -- Assume an invariant property saying that
   main_preserves_normal_mode
-  -- in the following sense:
+    -- in the following sense:
     do
-  -- first
+      -- first
       check assume: system_executes_normally end
-  -- assuming that
+      -- assuming that
       main_increments_time_delta
-  -- finally
+      -- finally
       check assume: system_executes_normally end
     end
 
   -- Assume an invariant property saying that
   handle_is_up_and_stays_up
-  -- in the following sense:
+    -- in the following sense:
     do
-  -- first
+      -- first
       check assume: handle_status = up_position end
-  -- assuming that
+      -- assuming that
       main_preserves_normal_mode
-  -- finally
+      -- finally
       check assume: handle_status = up_position end
     end
 
   -- Assume that
   handle_is_down_and_stays_down
-  -- in the following sense:
+    -- in the following sense:
     do
-  -- first
+      -- first
       check assume: handle_status = down_position end
-  -- assuming that
+      -- assuming that
       main_preserves_normal_mode
-  -- finally
+      -- finally
       check assume: handle_status = down_position end
     end
 
   -- Require maximal distance property
   r11_bis
-  -- defined as follows:
+    -- defined as follows:
     do
+      -- first
+      check assume: time_delta = 0 end
+      -- then starting
       from
-  -- a state that
-        check assume: time_delta = 0 end
+      -- the same state
       until
-  -- a state in which
+        -- a state in which
         gear_status = extended_position and door_status = closed_position
-  -- is reached
+        -- is reached
         or else time_delta = 10
       loop
-  -- assuming that
+        -- assuming that
         handle_is_down_and_stays_down
       end
-  -- finally
+      -- finally
       check assert: gear_status = extended_position end
-  -- and then
+      -- and then
       check assert: door_status = closed_position end
     end
 
   -- Require maximal distance property
   r12_bis
-  -- defined as follows:
+    -- defined as follows:
     do
+      -- first
+      check assume: time_delta = 0 end
+      -- then starting
       from
-  -- a state that
-        check assume: time_delta = 0 end
+      -- the same state
       until
-  -- a state in which
+        -- a state in which
         gear_status = retracted_position and door_status = closed_position
-  -- is reached
+        -- is reached
         or else time_delta = 10
       loop
-  -- assuming that
+        -- assuming that
         handle_is_up_and_stays_up
       end
-  -- finally
+      -- finally
       check assert: gear_status = retracted_position end
-  -- and then
+      -- and then
       check assert: door_status = closed_position end
     end
 
   -- Require maximal distance property
   r21
-  -- defined as follows:
+    -- defined as follows:
     do
+      -- first
+      check assume: time_delta = 0 end
+      -- then starting
       from
-  -- a state that
-        check assume: time_delta = 0 end
+      -- the same state
       until
-  -- a state in which
+        -- a state in which
         gear_status /= extending_state
-  -- is reached
+        -- is reached
         or else time_delta = 1
       loop
-  -- assuming that
+        -- assuming that
         handle_is_up_and_stays_up
       end
-  -- finally
+      -- finally
       check assert: gear_status /= extending_state end
     end
 
   -- Require maximal distance property
   r22
-  -- defined as follows:
+    -- defined as follows:
     do
+      -- first
+      check assume: time_delta = 0 end
+      -- then starting
       from
-  -- a state that
-        check assume: time_delta = 0 end
+      -- the same state
       until
-  -- a state in which
+        -- a state in which
         gear_status /= retracting_state
-  -- is reached
+        -- is reached
         or else time_delta = 1
       loop
-  -- assuming that
+        -- assuming that
         handle_is_down_and_stays_down
       end
-  -- finally
+      -- finally
       check assert: gear_status /= retracting_state end
     end
 
   -- Require invariant property
   r11_rs
-  -- defined as follows:
+    -- defined as follows:
     do
-  -- first
+      -- first
       check assume: gear_status = extended_position end
-  -- and then
+      -- and then
       check assume: door_status = closed_position end
-  -- assuming that
+      -- assuming that
       handle_is_down_and_stays_down
-  -- finally
+      -- finally
       check assert: gear_status = extended_position end
-  -- and then
+      -- and then
       check assert: door_status = closed_position end
     end
 
   --Require invariant property
   r12_rs
-  -- defined as follows:
+    -- defined as follows:
     do
-  -- first
+      -- first
       check assume: gear_status = retracted_position end
-  -- and then
+      -- and then
       check assume: door_status = closed_position end
-  -- assuming that
+      -- assuming that
       handle_is_up_and_stays_up
-  -- finally
+      -- finally
       check assert: gear_status = retracted_position end
-  -- and then
+      -- and then
       check assert: door_status = closed_position end
     end
 
 invariant
--- Ignore (verification-related annotations)
+  -- Ignore (verification-related annotations)
   subjects = []  
 end
