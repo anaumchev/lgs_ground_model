@@ -144,7 +144,8 @@ feature -- The top-level logic
       end
     end
 
-feature {NONE} -- Representations of the requirements
+feature {NONE} -- Requirements programming
+
   -- Assume an axiomatically defined function
   time_delta: INTEGER
   -- that
@@ -167,43 +168,43 @@ feature {NONE} -- Representations of the requirements
       check assume: time_delta = old_time_delta + 1 end
     end
   
-  -- Assume 
+  -- Assume an invariant property saying that
   main_preserves_normal_mode
   -- in the following sense:
     do
   -- first
       check assume: system_executes_normally end
-  -- then assume that
+  -- assuming that
       main_increments_time_delta
   -- finally
       check assume: system_executes_normally end
     end
 
-  -- Assume
+  -- Assume an invariant property saying that
   handle_is_up_and_stays_up
   -- in the following sense:
     do
   -- first
       check assume: handle_status = up_position end
-  -- then assume that
+  -- assuming that
       main_preserves_normal_mode
   -- finally
       check assume: handle_status = up_position end
     end
 
-  -- Assume
+  -- Assume that
   handle_is_down_and_stays_down
   -- in the following sense:
     do
   -- first
       check assume: handle_status = down_position end
-  -- then assume that
+  -- assuming that
       main_preserves_normal_mode
   -- finally
       check assume: handle_status = down_position end
     end
 
-  -- Require
+  -- Require maximal distance property
   r11_bis
   -- defined as follows:
     do
@@ -225,7 +226,7 @@ feature {NONE} -- Representations of the requirements
       check assert: door_status = closed_position end
     end
 
-  -- Require
+  -- Require maximal distance property
   r12_bis
   -- defined as follows:
     do
@@ -247,7 +248,7 @@ feature {NONE} -- Representations of the requirements
       check assert: door_status = closed_position end
     end
 
-  -- Require
+  -- Require maximal distance property
   r21
   -- defined as follows:
     do
@@ -267,7 +268,7 @@ feature {NONE} -- Representations of the requirements
       check assert: gear_status /= extending_state end
     end
 
-  -- Require
+  -- Require maximal distance property
   r22
   -- defined as follows:
     do
@@ -287,7 +288,7 @@ feature {NONE} -- Representations of the requirements
       check assert: gear_status /= retracting_state end
     end
 
-  -- Require
+  -- Require invariant property
   r11_rs
   -- defined as follows:
     do
@@ -303,7 +304,7 @@ feature {NONE} -- Representations of the requirements
       check assert: door_status = closed_position end
     end
 
-  --Require
+  --Require invariant property
   r12_rs
   -- defined as follows:
     do
