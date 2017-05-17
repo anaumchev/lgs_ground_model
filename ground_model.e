@@ -119,15 +119,15 @@ feature
 feature {NONE}
 
   -- Assume an axiomatically defined
-  time_delta: INTEGER
+  distance: INTEGER
 
   -- Assume that
-  main_increments_time_delta
+  main_increments_distance
     -- in the following sense
     do
       -- perform
       main
-      time_delta := time_delta + 1
+      distance := distance + 1
     end
 
   -- Require invariant property saying that
@@ -141,7 +141,7 @@ feature {NONE}
       check assume: (gear_status = extending_state or gear_status = retracting_state) implies door_status = open_position end
       check assume: door_status = closed_position implies (gear_status = extended_position or gear_status = retracted_position) end
       -- after performing
-      main_increments_time_delta
+      main_increments_distance
       -- do
       check assert: handle_status = up_position or handle_status = down_position end
       check assert: door_status = closed_position or door_status = opening_state or door_status = open_position or door_status = closing_state end
@@ -179,7 +179,7 @@ feature {NONE}
     -- defined as follows:
     do
       -- first
-      check assume: time_delta = 0 end
+      check assume: distance = 0 end
       -- then starting
       from
       -- the same state
@@ -187,7 +187,7 @@ feature {NONE}
         -- a state in which
         gear_status = extended_position and door_status = closed_position
         -- is reached
-        or else time_delta = 10
+        or else distance = 10
       loop
         -- assuming that
         when_handle_is_down_it_stays_down
@@ -203,7 +203,7 @@ feature {NONE}
     -- defined as follows:
     do
       -- first
-      check assume: time_delta = 0 end
+      check assume: distance = 0 end
       -- then starting
       from
       -- the same state
@@ -211,7 +211,7 @@ feature {NONE}
         -- a state in which
         gear_status = retracted_position and door_status = closed_position
         -- is reached
-        or else time_delta = 10
+        or else distance = 10
       loop
         -- assuming that
         when_handle_is_up_it_stays_up
@@ -227,7 +227,7 @@ feature {NONE}
     -- defined as follows:
     do
       -- first
-      check assume: time_delta = 0 end
+      check assume: distance = 0 end
       -- then starting
       from
       -- the same state
@@ -235,7 +235,7 @@ feature {NONE}
         -- a state in which
         gear_status /= extending_state
         -- is reached
-        or else time_delta = 1
+        or else distance = 1
       loop
         -- assuming that
         when_handle_is_up_it_stays_up
@@ -249,7 +249,7 @@ feature {NONE}
     -- defined as follows:
     do
       -- first
-      check assume: time_delta = 0 end
+      check assume: distance = 0 end
       -- then starting
       from
       -- the same state
@@ -257,7 +257,7 @@ feature {NONE}
         -- a state in which
         gear_status /= retracting_state
         -- is reached
-        or else time_delta = 1
+        or else distance = 1
       loop
         -- assuming that
         when_handle_is_down_it_stays_down
