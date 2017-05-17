@@ -1,36 +1,35 @@
 note explicit: "all"
 
 class GROUND_MODEL
-feature {NONE} -- State ranges
+feature {NONE}
+-- State ranges
 
--- Handle state range
+  -- Handle state range
   up_position: NATURAL = 0
   down_position: NATURAL = 1
 
--- Door state range
+  -- Door state range
   closed_position: NATURAL = 2
   opening_state: NATURAL = 3
   open_position: NATURAL = 4
   closing_state: NATURAL = 5
 
--- Gear state range
+  -- Gear state range
   retracting_state: NATURAL = 6
   retracted_position: NATURAL = 7
   extending_state: NATURAL = 8
   extended_position: NATURAL = 9
 
-feature {NONE} -- State space
-
+  -- State space
   handle_status: NATURAL
   door_status: NATURAL
   gear_status: NATURAL
 
-feature {NONE} -- Consistency criteria
 
-feature {NONE} -- Operations on doors
+-- Operations on the door
 
+  -- Closing the door.
   close_door
-  -- Closing the doors.
     do
       inspect door_status
       when open_position then
@@ -43,8 +42,8 @@ feature {NONE} -- Operations on doors
       end
     end
 
+  -- Opening the door.
   open_door
-  -- Opening the doors.
     do
       inspect door_status
       when closed_position then
@@ -57,29 +56,32 @@ feature {NONE} -- Operations on doors
       end
     end
 
-feature {NONE} -- Operations on gears
 
+-- Operations on the gear.
+
+  -- Gear retraction.
   retract
-  -- Gears retraction.
     do
       if gear_status /= retracted_position then
         open_door
-        inspect gear_status
-        when extended_position then
-          gear_status := retracting_state
-        when retracting_state then
-          gear_status := retracted_position
-        when extending_state then
-          gear_status := retracting_state
-        else
+        if door_status = open_position then
+          inspect gear_status
+          when extended_position then
+            gear_status := retracting_state
+          when retracting_state then
+            gear_status := retracted_position
+          when extending_state then
+            gear_status := retracting_state
+          else
+          end
         end
       else
         close_door
       end
     end
 
+  -- Gear extension.
   extend
-  -- Gears extension.
     do
       if gear_status /= extended_position then
         open_door
@@ -99,10 +101,11 @@ feature {NONE} -- Operations on gears
       end
     end
 
-feature -- The top-level logic 
+feature
+-- The top-level logic 
 
-  main
   -- The main routine that will infinitely react to the handle changes.
+  main
     do
       if handle_status = up_position then
         retract
@@ -110,6 +113,7 @@ feature -- The top-level logic
         extend
       end
     end
+
 
 -- Requirements
 feature {NONE}
@@ -125,29 +129,29 @@ feature {NONE}
       main
       time_delta := time_delta + 1
     end
-  
-  -- Assume that
-  system_is_in_normal_mode
-    -- in the following sense
+
+  -- Require invariant property saying that
+  main_preserves_normal_mode
+    -- in the following sense:
     do
+      -- first
       check assume: handle_status = up_position or handle_status = down_position end
       check assume: door_status = closed_position or door_status = opening_state or door_status = open_position or door_status = closing_state end
       check assume: gear_status = extended_position or gear_status = extending_state or gear_status = retracted_position or gear_status = retracting_state end
       check assume: (gear_status = extending_state or gear_status = retracting_state) implies door_status = open_position end
       check assume: door_status = closed_position implies (gear_status = extended_position or gear_status = retracted_position) end
-    end 
-
-  -- Assume an invariant property saying that
-  main_preserves_normal_mode
-    -- in the following sense:
-    do
-      system_is_in_normal_mode
+      -- after performing
       main_increments_time_delta
-      system_is_in_normal_mode
+      -- do
+      check assert: handle_status = up_position or handle_status = down_position end
+      check assert: door_status = closed_position or door_status = opening_state or door_status = open_position or door_status = closing_state end
+      check assert: gear_status = extended_position or gear_status = extending_state or gear_status = retracted_position or gear_status = retracting_state end
+      check assert: (gear_status = extending_state or gear_status = retracting_state) implies door_status = open_position end
+      check assert: door_status = closed_position implies (gear_status = extended_position or gear_status = retracted_position) end
     end
 
-  -- Assume an invariant property saying that
-  handle_is_up_and_stays_up
+  -- Require invariant property saying that
+  when_handle_is_up_it_stays_up
     -- in the following sense:
     do
       -- first
@@ -155,11 +159,11 @@ feature {NONE}
       -- assuming that
       main_preserves_normal_mode
       -- finally
-      check assume: handle_status = up_position end
+      check assert: handle_status = up_position end
     end
 
-  -- Assume that
-  handle_is_down_and_stays_down
+  -- Require invariant property saying that
+  when_handle_is_down_it_stays_down
     -- in the following sense:
     do
       -- first
@@ -167,7 +171,7 @@ feature {NONE}
       -- assuming that
       main_preserves_normal_mode
       -- finally
-      check assume: handle_status = down_position end
+      check assert: handle_status = down_position end
     end
 
   -- Require maximal distance property
@@ -186,7 +190,7 @@ feature {NONE}
         or else time_delta = 10
       loop
         -- assuming that
-        handle_is_down_and_stays_down
+        when_handle_is_down_it_stays_down
       end
       -- finally
       check assert: gear_status = extended_position end
@@ -210,7 +214,7 @@ feature {NONE}
         or else time_delta = 10
       loop
         -- assuming that
-        handle_is_up_and_stays_up
+        when_handle_is_up_it_stays_up
       end
       -- finally
       check assert: gear_status = retracted_position end
@@ -234,7 +238,7 @@ feature {NONE}
         or else time_delta = 1
       loop
         -- assuming that
-        handle_is_up_and_stays_up
+        when_handle_is_up_it_stays_up
       end
       -- finally
       check assert: gear_status /= extending_state end
@@ -256,7 +260,7 @@ feature {NONE}
         or else time_delta = 1
       loop
         -- assuming that
-        handle_is_down_and_stays_down
+        when_handle_is_down_it_stays_down
       end
       -- finally
       check assert: gear_status /= retracting_state end
@@ -271,7 +275,7 @@ feature {NONE}
       -- and then
       check assume: door_status = closed_position end
       -- assuming that
-      handle_is_down_and_stays_down
+      when_handle_is_down_it_stays_down
       -- finally
       check assert: gear_status = extended_position end
       -- and then
@@ -287,7 +291,7 @@ feature {NONE}
       -- and then
       check assume: door_status = closed_position end
       -- assuming that
-      handle_is_up_and_stays_up
+      when_handle_is_up_it_stays_up
       -- finally
       check assert: gear_status = retracted_position end
       -- and then
