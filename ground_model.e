@@ -1,6 +1,6 @@
-note explicit: "all" -- Ignore (verification-related annotations)
+note explicit: "all"
 
-class GROUND_MODEL_ASSERTIONS
+class GROUND_MODEL
 feature {NONE} -- State ranges
 
 -- Handle state range
@@ -27,26 +27,11 @@ feature {NONE} -- State space
 
 feature {NONE} -- Consistency criteria
 
-  system_executes_normally: BOOLEAN
-  -- There is no "|" notation in Eiffel, thus have to check the ranges explicitly
-    note status: functional
-    do
-      Result := ((handle_status = up_position or handle_status = down_position) and
-        (door_status = closed_position or door_status = opening_state or door_status = open_position or door_status = closing_state) and
-        (gear_status = extended_position or gear_status = extending_state or gear_status = retracted_position or gear_status = retracting_state) and
-        ((gear_status = extending_state or gear_status = retracting_state) implies door_status = open_position) and
-        (door_status = closed_position implies (gear_status = extended_position or gear_status = retracted_position)))
-    end
-
 feature {NONE} -- Operations on doors
 
   close_door
   -- Closing the doors.
     do
-    -- Ignore (verification-related annotations)
-      check assume:observers.is_empty end
-      check assume:is_open end
-    -- Meaningful instructions
       inspect door_status
       when open_position then
         door_status := closing_state
@@ -61,10 +46,6 @@ feature {NONE} -- Operations on doors
   open_door
   -- Opening the doors.
     do
-    -- Ignore (verification-related annotations)
-      check assume:observers.is_empty end
-      check assume:is_open end
-    -- Meaningful instructions
       inspect door_status
       when closed_position then
         door_status := opening_state
@@ -81,22 +62,16 @@ feature {NONE} -- Operations on gears
   retract
   -- Gears retraction.
     do
-    -- Ignore (verification-related annotations)
-      check assume:observers.is_empty end
-      check assume:is_open end
-    -- Meaningful instructions
       if gear_status /= retracted_position then
         open_door
-        if door_status = open_position then
-          inspect gear_status
-          when extended_position then
-            gear_status := retracting_state
-          when retracting_state then
-            gear_status := retracted_position
-          when extending_state then
-            gear_status := retracting_state
-          else
-          end
+        inspect gear_status
+        when extended_position then
+          gear_status := retracting_state
+        when retracting_state then
+          gear_status := retracted_position
+        when extending_state then
+          gear_status := retracting_state
+        else
         end
       else
         close_door
@@ -106,10 +81,6 @@ feature {NONE} -- Operations on gears
   extend
   -- Gears extension.
     do
-    -- Ignore (verification-related annotations)
-      check assume:observers.is_empty end
-      check assume:is_open end
-    -- Meaningful instructions
       if gear_status /= extended_position then
         open_door
         if door_status = open_position then
@@ -133,10 +104,6 @@ feature -- The top-level logic
   main
   -- The main routine that will infinitely react to the handle changes.
     do
-    -- Ignore (verification-related annotations)
-      check assume:observers.is_empty end
-      check assume:is_open end
-    -- Meaningful instructions
       if handle_status = up_position then
         retract
       elseif handle_status = down_position then
@@ -147,38 +114,36 @@ feature -- The top-level logic
 -- Requirements
 feature {NONE}
 
-  -- Assume an axiomatically defined function
+  -- Assume an axiomatically defined
   time_delta: INTEGER
-    -- that
-    do
-    -- nothing
-    end
 
   -- Assume that
   main_increments_time_delta
-    -- in the following sense: given
-    local
-      -- variable
-      old_time_delta: INTEGER
+    -- in the following sense
     do
       -- perform
-      old_time_delta := time_delta
-      -- and then
       main
-      -- finally
-      check assume: time_delta = old_time_delta + 1 end
+      time_delta := time_delta + 1
     end
   
+  -- Assume that
+  system_is_in_normal_mode
+    -- in the following sense
+    do
+      check assume: handle_status = up_position or handle_status = down_position end
+      check assume: door_status = closed_position or door_status = opening_state or door_status = open_position or door_status = closing_state end
+      check assume: gear_status = extended_position or gear_status = extending_state or gear_status = retracted_position or gear_status = retracting_state end
+      check assume: (gear_status = extending_state or gear_status = retracting_state) implies door_status = open_position end
+      check assume: door_status = closed_position implies (gear_status = extended_position or gear_status = retracted_position) end
+    end 
+
   -- Assume an invariant property saying that
   main_preserves_normal_mode
     -- in the following sense:
     do
-      -- first
-      check assume: system_executes_normally end
-      -- assuming that
+      system_is_in_normal_mode
       main_increments_time_delta
-      -- finally
-      check assume: system_executes_normally end
+      system_is_in_normal_mode
     end
 
   -- Assume an invariant property saying that
@@ -328,8 +293,4 @@ feature {NONE}
       -- and then
       check assert: door_status = closed_position end
     end
-
-invariant
-  -- Ignore (verification-related annotations)
-  subjects = []  
 end
