@@ -132,11 +132,13 @@ feature {NONE}
   -- Assume the system is
   run_in_normal_mode
     do
-      check assume: handle_status = up_position or handle_status = down_position end
-      check assume: door_status = closed_position or door_status = opening_state or door_status = open_position or door_status = closing_state end
-      check assume: gear_status = extended_position or gear_status = extending_state or gear_status = retracted_position or gear_status = retracting_state end
-      check assume: (gear_status = extending_state or gear_status = retracting_state) implies door_status = open_position end
-      check assume: door_status = closed_position implies (gear_status = extended_position or gear_status = retracted_position) end
+      check assume:
+        (handle_status = up_position or handle_status = down_position) and
+        (door_status = closed_position or door_status = opening_state or door_status = open_position or door_status = closing_state) and
+        (gear_status = extended_position or gear_status = extending_state or gear_status = retracted_position or gear_status = retracting_state) and
+        ((gear_status = extending_state or gear_status = retracting_state) implies door_status = open_position) and
+        (door_status = closed_position implies (gear_status = extended_position or gear_status = retracted_position))
+      end
       main
     end
 
@@ -243,9 +245,7 @@ feature {NONE}
       run_with_handle_down
       run_with_handle_down
       run_with_handle_down
-      -- then
       check assert: gear_status = extended_position end
-      -- also
       check assert: door_status = closed_position end
     end
 
@@ -291,7 +291,7 @@ feature {NONE}
     end
 
   -- Require the system to
-  never_retract_with_handle_up
+  never_retract_with_handle_down
     do
       run_with_handle_down
       check assert: gear_status /= retracting_state end
