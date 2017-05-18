@@ -54,7 +54,10 @@ feature {NONE}
       end
     end
 
-  -- Retracting the gear
+
+-- Operations on the gear.
+
+  -- Retracting the gear.
   retract_gear
     do
       inspect gear_status
@@ -67,7 +70,7 @@ feature {NONE}
       end      
     end
 
-  -- Extending the gear
+  -- Extending the gear.
   extend_gear
     do
       inspect gear_status
@@ -80,9 +83,8 @@ feature {NONE}
       end
     end
 
--- Operations on the gear.
 
-  -- Retraction.
+  -- Retraction logic.
   retract
     do
       if gear_status /= retracted_position then
@@ -96,7 +98,7 @@ feature {NONE}
       end
     end
 
-  -- Extension.
+  -- Extension logic.
   extend
     do
       if gear_status /= extended_position then
@@ -145,8 +147,9 @@ feature {NONE}
   -- to take the door
   from_open_to_closed
   -- position:
+    -- consider
     local
-      -- consider variable:
+      -- variable:
       old_door_status: INTEGER      
     do
       -- that stores initial door status:
@@ -163,8 +166,9 @@ feature {NONE}
   -- to take the foor
   from_closed_to_open
   -- position:
+    -- consider
     local
-      -- consider variable:
+      -- variable:
       old_door_status: INTEGER
     do
       -- that stores initial door status:
@@ -181,8 +185,9 @@ feature {NONE}
   -- to take the gear
   from_extended_to_retracted
   -- position:
+    -- consider
     local
-      -- consider variable:
+      -- variable:
       old_gear_status: INTEGER
     do
       -- that stores initial gear status:
@@ -199,8 +204,9 @@ feature {NONE}
   -- to take the gear
   from_retracted_to_extended
   -- position:
+    -- consider
     local
-      -- consider variable:
+      -- variable:
       old_gear_status: INTEGER
     do
       -- that stores initial gear status:
