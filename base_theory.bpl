@@ -282,7 +282,6 @@ procedure allocate(t: Type) returns (result: ref);
 
 // Update Heap position Current.field with value.
 procedure update_heap<T>(Current: ref, field: Field T, value: T);
-  requires (Current != Void) && (Heap[Current, allocated]); // type:assign tag:attached_and_allocated
   requires writable[Current, field]; // type:assign tag:attribute_writable UP3
   modifies Heap;
   ensures global(Heap);

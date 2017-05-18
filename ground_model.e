@@ -5,25 +5,25 @@ feature {NONE}
 -- State ranges
 
   -- Handle state range
-  up_position: NATURAL = 0
-  down_position: NATURAL = 1
+  up_position: INTEGER = 0
+  down_position: INTEGER = 1
 
   -- Door state range
-  closed_position: NATURAL = 2
-  opening_state: NATURAL = 3
-  open_position: NATURAL = 4
-  closing_state: NATURAL = 5
+  closed_position: INTEGER = 2
+  opening_state: INTEGER = 3
+  open_position: INTEGER = 4
+  closing_state: INTEGER = 5
 
   -- Gear state range
-  retracting_state: NATURAL = 6
-  retracted_position: NATURAL = 7
-  extending_state: NATURAL = 8
-  extended_position: NATURAL = 9
+  retracting_state: INTEGER = 6
+  retracted_position: INTEGER = 7
+  extending_state: INTEGER = 8
+  extended_position: INTEGER = 9
 
   -- State space
-  handle_status: NATURAL
-  door_status: NATURAL
-  gear_status: NATURAL
+  handle_status: INTEGER
+  door_status: INTEGER
+  gear_status: INTEGER
 
 
 -- Operations on the door
@@ -38,7 +38,6 @@ feature {NONE}
         door_status := closed_position
       when opening_state then
         door_status := closing_state
-      else
       end
     end
 
@@ -52,49 +51,59 @@ feature {NONE}
         door_status := opening_state
       when opening_state then
         door_status := open_position
-      else
       end
     end
 
+  -- Retracting the gear
+  retract_gear
+    do
+      inspect gear_status
+      when extended_position then
+        gear_status := retracting_state
+      when retracting_state then
+        gear_status := retracted_position
+      when extending_state then
+        gear_status := retracting_state
+      end      
+    end
+
+  -- Extending the gear
+  extend_gear
+    do
+      inspect gear_status
+      when retracted_position then
+        gear_status := extending_state
+      when extending_state then
+        gear_status := extended_position
+      when retracting_state then
+        gear_status := extending_state
+      end
+    end
 
 -- Operations on the gear.
 
-  -- Gear retraction.
+  -- Retraction.
   retract
     do
       if gear_status /= retracted_position then
-        open_door
-        if door_status = open_position then
-          inspect gear_status
-          when extended_position then
-            gear_status := retracting_state
-          when retracting_state then
-            gear_status := retracted_position
-          when extending_state then
-            gear_status := retracting_state
-          else
-          end
+        if door_status /= open_position then
+          open_door
+        else
+          retract_gear
         end
       else
         close_door
       end
     end
 
-  -- Gear extension.
+  -- Extension.
   extend
     do
       if gear_status /= extended_position then
-        open_door
-        if door_status = open_position then
-          inspect gear_status
-          when retracted_position then
-            gear_status := extending_state
-          when extending_state then
-            gear_status := extended_position
-          when retracting_state then
-            gear_status := extending_state
-          else
-          end
+        if door_status /= open_position then
+          open_door
+        else
+          extend_gear
         end
       else
         close_door
@@ -118,183 +127,187 @@ feature
 -- Requirements
 feature {NONE}
 
-  -- Assume an axiomatically defined
-  distance: INTEGER
-
-  -- Assume that
-  main_increments_distance
-    -- in the following sense
+  -- Assume the system is
+  run_in_normal_mode
     do
-      -- perform
-      main
-      distance := distance + 1
-    end
-
-  -- Require invariant property saying that
-  main_preserves_normal_mode
-    -- in the following sense:
-    do
-      -- first
       check assume: handle_status = up_position or handle_status = down_position end
       check assume: door_status = closed_position or door_status = opening_state or door_status = open_position or door_status = closing_state end
       check assume: gear_status = extended_position or gear_status = extending_state or gear_status = retracted_position or gear_status = retracting_state end
       check assume: (gear_status = extending_state or gear_status = retracting_state) implies door_status = open_position end
       check assume: door_status = closed_position implies (gear_status = extended_position or gear_status = retracted_position) end
-      -- after performing
-      main_increments_distance
-      -- do
-      check assert: handle_status = up_position or handle_status = down_position end
-      check assert: door_status = closed_position or door_status = opening_state or door_status = open_position or door_status = closing_state end
-      check assert: gear_status = extended_position or gear_status = extending_state or gear_status = retracted_position or gear_status = retracting_state end
-      check assert: (gear_status = extending_state or gear_status = retracting_state) implies door_status = open_position end
-      check assert: door_status = closed_position implies (gear_status = extended_position or gear_status = retracted_position) end
+      main
     end
 
-  -- Require invariant property saying that
-  when_handle_is_up_it_stays_up
-    -- in the following sense:
+  -- Assume an axiomatically defined
+  distance: INTEGER
+
+  -- Assume it takes 8 time units
+  -- to take the door
+  from_open_to_closed
+  -- position:
+    local
+      -- consider variable:
+      old_door_status: INTEGER      
     do
-      -- first
+      -- that stores initial door status:
+      old_door_status := door_status
+      run_in_normal_mode
+      -- changing the door status to 'closed_position':
+      if (old_door_status /= closed_position and door_status = closed_position) then
+        -- takes up to 8 time units:
+        distance := distance + 8
+      end
+    end
+
+  -- Assume it takes 12 time units
+  -- to take the foor
+  from_closed_to_open
+  -- position:
+    local
+      -- consider variable:
+      old_door_status: INTEGER
+    do
+      -- that stores initial door status:
+      old_door_status := door_status
+      from_open_to_closed
+      -- changing the door status to 'open_position':
+      if (old_door_status /= open_position and door_status = open_position) then
+        -- takes up to 12 time units:
+        distance := distance + 12
+      end
+    end
+
+  -- Assume it takes 10 time units
+  -- to take the gear
+  from_extended_to_retracted
+  -- position:
+    local
+      -- consider variable:
+      old_gear_status: INTEGER
+    do
+      -- that stores initial gear status:
+      old_gear_status := gear_status
+      from_closed_to_open
+      -- changing the gear status to 'retracted_position':
+      if (old_gear_status /= retracted_position and gear_status = retracted_position) then
+        -- takes up to 10 time units:
+        distance := distance + 10
+      end
+    end
+
+  -- Assume it takes 5 time units
+  -- to take the gear
+  from_retracted_to_extended
+  -- position:
+    local
+      -- consider variable:
+      old_gear_status: INTEGER
+    do
+      -- that stores initial gear status:
+      old_gear_status := gear_status
+      from_extended_to_retracted
+      -- changing the gear status to 'extended_position':
+      if (old_gear_status /= extended_position and gear_status = extended_position) then
+        -- takes up to 5 time units:
+        distance := distance + 5
+      end
+    end
+
+  -- Assume the system is
+  run_with_handle_up
+    do
       check assume: handle_status = up_position end
-      -- assuming that
-      main_preserves_normal_mode
-      -- finally
-      check assert: handle_status = up_position end
+      from_retracted_to_extended
     end
 
-  -- Require invariant property saying that
-  when_handle_is_down_it_stays_down
-    -- in the following sense:
+  -- Assume the system is
+  run_with_handle_down
     do
-      -- first
       check assume: handle_status = down_position end
-      -- assuming that
-      main_preserves_normal_mode
-      -- finally
-      check assert: handle_status = down_position end
+      from_retracted_to_extended
     end
 
-  -- Require maximal distance property
-  r11_bis
-    -- defined as follows:
+  -- Require the system to always complete
+  extension
+  -- in at most 6 runs with handle up:
     do
-      -- first
-      check assume: distance = 0 end
-      -- then starting
-      from
-      -- the same state
-      until
-        -- a state in which
-        gear_status = extended_position and door_status = closed_position
-        -- is reached
-        or else distance = 10
-      loop
-        -- assuming that
-        when_handle_is_down_it_stays_down
-      end
-      -- finally
+      run_with_handle_down
+      run_with_handle_down
+      run_with_handle_down
+      run_with_handle_down
+      run_with_handle_down
+      run_with_handle_down
+      -- then
       check assert: gear_status = extended_position end
-      -- and then
+      -- also
       check assert: door_status = closed_position end
     end
 
-  -- Require maximal distance property
-  r12_bis
-    -- defined as follows:
+  -- Require that
+  extension_duration
+  -- never takes more then
+  -- 25 time units:
     do
-      -- first
       check assume: distance = 0 end
-      -- then starting
-      from
-      -- the same state
-      until
-        -- a state in which
-        gear_status = retracted_position and door_status = closed_position
-        -- is reached
-        or else distance = 10
-      loop
-        -- assuming that
-        when_handle_is_up_it_stays_up
-      end
-      -- finally
+      extension
+      check assert: distance <= 25 end
+    end
+
+  -- Require the system to always complete
+  retraction
+  -- in at most 6 runs with handle up:
+    do
+      run_with_handle_up
+      run_with_handle_up
+      run_with_handle_up
+      run_with_handle_up
+      run_with_handle_up
+      run_with_handle_up
       check assert: gear_status = retracted_position end
-      -- and then
       check assert: door_status = closed_position end
     end
 
-  -- Require maximal distance property
-  r21
-    -- defined as follows:
+  -- Require that
+  retraction_duration
+  -- never takes more than
+  -- 30 time units:
     do
-      -- first
       check assume: distance = 0 end
-      -- then starting
-      from
-      -- the same state
-      until
-        -- a state in which
-        gear_status /= extending_state
-        -- is reached
-        or else distance = 1
-      loop
-        -- assuming that
-        when_handle_is_up_it_stays_up
-      end
-      -- finally
+      retraction
+      check assert: distance <= 30 end
+    end
+
+  -- Require the system to
+  never_extend_with_handle_up
+    do
+      run_with_handle_up
       check assert: gear_status /= extending_state end
     end
 
-  -- Require maximal distance property
-  r22
-    -- defined as follows:
+  -- Require the system to
+  never_retract_with_handle_up
     do
-      -- first
-      check assume: distance = 0 end
-      -- then starting
-      from
-      -- the same state
-      until
-        -- a state in which
-        gear_status /= retracting_state
-        -- is reached
-        or else distance = 1
-      loop
-        -- assuming that
-        when_handle_is_down_it_stays_down
-      end
-      -- finally
+      run_with_handle_down
       check assert: gear_status /= retracting_state end
     end
 
-  -- Require invariant property
-  r11_rs
-    -- defined as follows:
+  -- Require the system to have the following
+  stable_state_with_handle_down
     do
-      -- first
       check assume: gear_status = extended_position end
-      -- and then
       check assume: door_status = closed_position end
-      -- assuming that
-      when_handle_is_down_it_stays_down
-      -- finally
+      run_with_handle_down
       check assert: gear_status = extended_position end
-      -- and then
       check assert: door_status = closed_position end
     end
 
-  --Require invariant property
-  r12_rs
-    -- defined as follows:
+  -- Require the system to have the following
+  stable_state_with_handle_up
     do
-      -- first
       check assume: gear_status = retracted_position end
-      -- and then
       check assume: door_status = closed_position end
-      -- assuming that
-      when_handle_is_up_it_stays_up
-      -- finally
+      run_with_handle_up
       check assert: gear_status = retracted_position end
-      -- and then
       check assert: door_status = closed_position end
     end
 end
