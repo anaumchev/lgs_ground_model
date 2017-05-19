@@ -165,7 +165,7 @@ feature {NONE}
     end
 
   -- Assume it takes 12 time units
-  -- to take the foor
+  -- to take the door
   from_closed_to_open
   -- position:
     -- consider
@@ -251,12 +251,14 @@ feature {NONE}
 
   -- Require that
   extension_duration
-  -- never takes more then
+  -- never takes more than
   -- 25 time units:
+    local
+      old_distance: INTEGER
     do
-      check assume: distance = 0 end
+      old_distance := distance
       extension
-      check assert: distance <= 25 end
+      check assert: (distance - old_distance) <= 25 end
     end
 
   -- Require the system to always complete
@@ -277,10 +279,12 @@ feature {NONE}
   retraction_duration
   -- never takes more than
   -- 30 time units:
+    local
+      old_distance: INTEGER
     do
-      check assume: distance = 0 end
+      old_distance := distance
       retraction
-      check assert: distance <= 30 end
+      check assert: (distance - old_distance) <= 30 end
     end
 
   -- Require the system to
