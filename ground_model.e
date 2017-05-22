@@ -235,57 +235,34 @@ feature {NONE}
       from_retracted_to_extended
     end
 
-  -- Require the system to always complete
-  extension
-  -- in at most 6 runs with handle up:
+  -- Require the system to
+  never_retract_with_handle_down
     do
       run_with_handle_down
-      run_with_handle_down
-      run_with_handle_down
-      run_with_handle_down
-      run_with_handle_down
-      run_with_handle_down
-      check assert: gear_status = extended_position end
-      check assert: door_status = closed_position end
+      check assert: gear_status /= retracting_state end
     end
 
   -- Require that
   extension_duration
-  -- never takes more than
+  -- is never longer than
   -- 25 time units:
     local
       old_distance: INTEGER
     do
-      old_distance := distance
-      extension
-      check assert: (distance - old_distance) <= 25 end
-    end
-
-  -- Require the system to always complete
-  retraction
-  -- in at most 6 runs with handle up:
-    do
-      run_with_handle_up
-      run_with_handle_up
-      run_with_handle_up
-      run_with_handle_up
-      run_with_handle_up
-      run_with_handle_up
-      check assert: gear_status = retracted_position end
+      from
+        old_distance := distance
+        never_retract_with_handle_down
+      until
+        gear_status = extended_position and
+        door_status = closed_position or
+        (distance - old_distance) = 25
+      loop
+        run_with_handle_down
+      end
+      check assert: gear_status = extended_position end
       check assert: door_status = closed_position end
     end
 
-  -- Require that
-  retraction_duration
-  -- never takes more than
-  -- 30 time units:
-    local
-      old_distance: INTEGER
-    do
-      old_distance := distance
-      retraction
-      check assert: (distance - old_distance) <= 30 end
-    end
 
   -- Require the system to
   never_extend_with_handle_up
@@ -294,11 +271,38 @@ feature {NONE}
       check assert: gear_status /= extending_state end
     end
 
-  -- Require the system to
-  never_retract_with_handle_down
+  -- Require that
+  retraction
+  -- never takes more than
+  -- 6 steps:
+    local
+      steps: INTEGER
     do
-      run_with_handle_down
-      check assert: gear_status /= retracting_state end
+      from
+        steps := 0
+        never_extend_with_handle_up
+      until
+        gear_status = retracted_position and
+        door_status = closed_position or
+        steps = 5
+      loop
+        run_with_handle_up
+        steps := steps + 1
+      end
+      check assert: gear_status = retracted_position end
+      check assert: door_status = closed_position end
+    end
+
+  -- Require that
+  retraction_duration
+  -- is never longer than
+  -- 30 time units:
+    local
+      old_distance: INTEGER
+    do
+      old_distance := distance
+      retraction
+      check assert: (distance - old_distance) <= 30 end
     end
 
   -- Require the system to have the following
