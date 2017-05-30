@@ -1,32 +1,32 @@
 note explicit: "all"
 
 class GROUND_MODEL
+-- State ranges.
 feature {NONE}
--- State ranges
 
-  -- Handle state range
+  -- Handle state range.
   up_position: INTEGER = 0
   down_position: INTEGER = 1
 
-  -- Door state range
+  -- Door state range.
   closed_position: INTEGER = 2
   opening_state: INTEGER = 3
   open_position: INTEGER = 4
   closing_state: INTEGER = 5
 
-  -- Gear state range
+  -- Gear state range.
   retracting_state: INTEGER = 6
   retracted_position: INTEGER = 7
   extending_state: INTEGER = 8
   extended_position: INTEGER = 9
 
-  -- State space
+  -- State space.
   handle_status: INTEGER
   door_status: INTEGER
   gear_status: INTEGER
 
-
--- Operations on the door
+-- Operations on the door.
+feature {NONE}
 
   -- Closing the door.
   close_door
@@ -54,8 +54,8 @@ feature {NONE}
       end
     end
 
-
 -- Operations on the gear.
+feature {NONE}
 
   -- Retracting the gear.
   retract_gear
@@ -83,6 +83,8 @@ feature {NONE}
       end
     end
 
+-- Core procedures.
+feature {NONE}
 
   -- Retraction logic.
   retract
@@ -112,8 +114,8 @@ feature {NONE}
       end
     end
 
+-- The top-level logic.
 feature
--- The top-level logic 
 
   -- The main routine that will infinitely react to the handle changes.
   main
@@ -125,20 +127,25 @@ feature
       end
     end
 
-
--- Requirements
+-- Requirements.
 feature
 
   -- Assume the system is
   run_in_normal_mode
     do
-      check assume:
-        (handle_status = up_position or handle_status = down_position) and
-        (door_status = closed_position or door_status = opening_state or door_status = open_position or door_status = closing_state) and
-        (gear_status = extended_position or gear_status = extending_state or gear_status = retracted_position or gear_status = retracting_state) and
-        ((gear_status = extending_state or gear_status = retracting_state) implies door_status = open_position) and
-        (door_status = closed_position implies (gear_status = extended_position or gear_status = retracted_position))
-      end
+      -- the handle status range:      
+      check assume: handle_status = up_position or handle_status = down_position end
+      -- the door status range:
+      check assume: door_status = closed_position or door_status = opening_state or door_status = open_position or door_status = closing_state end
+      -- the gear status range:
+      check assume: gear_status = extended_position or gear_status = extending_state or gear_status = retracted_position or gear_status = retracting_state end
+      -- the gear may extend or retract
+      -- only with the door open:
+      check assume: (gear_status = extending_state or gear_status = retracting_state) implies door_status = open_position end
+      -- closed door assumes
+      -- retracted or extended gear:
+      check assume: door_status = closed_position implies (gear_status = extended_position or gear_status = retracted_position) end
+      -- after all the assumptions are made, run:
       main
     end
 
@@ -156,6 +163,7 @@ feature
     do
       -- that stores initial door status:
       old_door_status := door_status
+      -- run the system in the normal mode:
       run_in_normal_mode
       -- changing the door status to 'closed_position':
       if (old_door_status /= closed_position and door_status = closed_position) then
@@ -195,7 +203,8 @@ feature
       -- that stores initial gear status:
       old_gear_status := gear_status
       from_closed_to_open
-      -- changing the gear status to 'retracted_position':
+      -- changing the gear status
+      -- to 'retracted_position':
       if (old_gear_status /= retracted_position and gear_status = retracted_position) then
         -- takes up to 10 time units:
         distance := distance + 10
@@ -214,18 +223,12 @@ feature
       -- that stores initial gear status:
       old_gear_status := gear_status
       from_extended_to_retracted
-      -- changing the gear status to 'extended_position':
+      -- changing the gear status
+      -- to 'extended_position':
       if (old_gear_status /= extended_position and gear_status = extended_position) then
         -- takes up to 5 time units:
         distance := distance + 5
       end
-    end
-
-  -- Assume the system is
-  run_with_handle_up
-    do
-      check assume: handle_status = up_position end
-      from_retracted_to_extended
     end
 
   -- Assume the system is
@@ -244,7 +247,7 @@ feature
 
   -- Require that
   extension_duration
-  -- is never longer than
+  -- never takes more than
   -- 25 time units:
     local
       old_distance: INTEGER
@@ -263,6 +266,12 @@ feature
       check assert: door_status = closed_position end
     end
 
+  -- Assume the system is
+  run_with_handle_up
+    do
+      check assume: handle_status = up_position end
+      from_retracted_to_extended
+    end
 
   -- Require the system to
   never_extend_with_handle_up
@@ -295,7 +304,7 @@ feature
 
   -- Require that
   retraction_duration
-  -- is never longer than
+  -- never takes more than
   -- 30 time units:
     local
       old_distance: INTEGER
