@@ -127,7 +127,7 @@ feature
 
 
 -- Requirements
-feature {NONE}
+feature
 
   -- Assume the system is
   run_in_normal_mode
