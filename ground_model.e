@@ -291,8 +291,6 @@ feature
         steps := 0
         never_extend_with_handle_up
       until
-        gear_status = retracted_position and
-        door_status = closed_position or
         steps = 5
       loop
         run_with_handle_up
