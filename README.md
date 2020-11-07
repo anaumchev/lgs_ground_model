@@ -1,6 +1,6 @@
 # Landing Gear System ground model specification and requirements in Eiffel
 
-The project accompanies the article "Towards a general method for expressing and proving embedded software requirements".
+The project accompanies the article "AutoReq: Expressing and verifying requirements for control systems" (https://www.sciencedirect.com/science/article/pii/S1045926X18301514).
 
 To verify the examples use the command-line version of AutoProof (http://se.inf.ethz.ch/research/autoproof/manual/#cmd_version) as follows:
 
